@@ -1,0 +1,1051 @@
+<!Doctype html >
+<html>
+<head>
+</head>
+<body>
+<pre>
+#pragma once
+///////////////////////////////////////////////////////////////////////
+// CodeUtilities.h - small, generally useful, helper classes         //
+// ver 1.3                                                           //
+// Language:    C++, Visual Studio 2017                              //
+// Application: Most Projects, CSE687 - Object Oriented Design       //
+// Author:      Ammar Salmon, TA, CSE687                             //
+// Source:      Jim Fawcett, Syracuse University, CST 4-187          //
+//              jfawcett@twcny.rr.com                                //
+///////////////////////////////////////////////////////////////////////
+/*
+* Package Operations:
+* -------------------
+* This package provides classes:
+* - ProcessCmdLine    extracts path, options, patterns, and a number from command line
+* - Converter&lt;T&lt;      converts T to and from strings
+* - Box&lt;T&lt;            converts primitive type to instance of a class
+* - PersistFactory&lt;T&lt; adds toXml() method to T
+*
+* Build Process:
+* --------------
+* Required Files:
+*   CodeUtilities.h
+*
+* Maintenance History:
+* --------------------
+* ver 1.4 : 28 Jan 2018
+* - added functions regex(), showregex() to handle regular expression
+* - added bool isValidRegex to determne if a given regular expression
+*   is valid or not
+* ver 1.3 : 16 Aug 2018
+* - added default usage text
+* ver 1.2 : 11 Aug 2018
+* - added ProcessCmdLine::hasOption method
+* - fixed bugs in ProcessCmdLine::showCmdLine
+*   and ProcessCmdLine::showOptions
+* ver 1.1 : 10 Aug 2018
+* - added ProcessCmdLine class
+* ver 1.0 : 12 Jan 2018
+* - first release
+* - refactored from earlier Utilities.h
+*
+* Notes:
+* ------
+* - Designed to provide all functionality in header file.
+* - Implementation file only needed for test and demo.
+*
+* Planned Additions and Changes:
+* ------------------------------
+* - none yet
+*/
+
+#include &lt;vector&lt;
+#include &lt;string&lt;
+#include &lt;sstream&lt;
+#include &lt;iostream&lt;
+#include &lt;regex&lt;
+
+namespace Utilities
+{
+	/////////////////////////////////////////////////////////////////////
+	// preface function
+	// - used to add a string preface to an output, e.g., "\n  "
+
+	inline void preface(const std::string& msg = "", bool doReturn = true, std::ostream& out = std::cout, const std::string& prefix = "  ")
+	{
+		if (doReturn) out &lt;&lt; "\n" &lt;&lt; prefix &lt;&lt; msg;
+	}
+
+	inline std::string defaultUsage()
+	{
+		std::string usage;
+		usage += "\n  Command Line: path [/option]* [/pattern]* [integer]";
+		usage += "\n    path is relative or absolute path where processing begins";
+		usage += "\n    [/option]* are one or more options of the form /s, /r, etc.";
+		usage += "\n    [pattern]* are one or more pattern strings used for matching";
+		usage += "\n    [integer] is the maximum number of items to process";
+		usage += "\n";
+		return usage;
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	// ProcessCmdLine class
+	// - extracts path, patterns, options, number
+
+	class ProcessCmdLine
+	{
+	public:
+		using Usage = std::string;
+		using Path = std::string;
+		using Option = int;
+		using Options = std::vector&lt;Option&lt;;
+		using Pattern = std::string;
+		using Patterns = std::vector&lt;Pattern&lt;;
+		using Regexes = std::vector&lt;std::string&lt;;
+		using Number = long int;
+
+		ProcessCmdLine(int argc, char** argv, std::ostream& out = std::cout);
+		ProcessCmdLine(const ProcessCmdLine&) = delete;
+		ProcessCmdLine& operator=(const ProcessCmdLine&) = delete;
+
+		bool parseError();
+		Path path();
+		void path(const Path& path);
+		Options options();
+		void option(Option op);
+		bool hasOption(Option op);
+		Patterns patterns();
+		Regexes regexes();
+		void pattern(const Pattern& patt);
+		Number maxItems();
+		void maxItems(Number number);
+		void usage(const Usage& usage);
+		void usage();
+		void showCmdLine(int argc, char** argv);
+		void showCmdLine();
+		void showPath();
+		void showOptions();
+		void showPatterns();
+		void showRegexes();
+		void showMaxItems();
+
+	private:
+		bool isValidRegex(const std::string& regex);
+	private:
+		Usage usage_;
+		Path path_;
+		Patterns patterns_;
+		Regexes regexes_;
+		Options options_;
+		int maxItems_ = 0;
+		bool parseError_ = false;
+		std::ostream& out_;
+	};
+
+	/*----&lt; path operations &lt;------------------------------------------*/
+
+	inline void ProcessCmdLine::path(const Path& path)
+	{
+		path_ = path;
+	}
+
+	inline ProcessCmdLine::Path ProcessCmdLine::path()
+	{
+		return path_;
+	}
+
+	inline void ProcessCmdLine::showPath()
+	{
+		out_ &lt;&lt; path_ &lt;&lt; " ";
+	}
+
+	/*----&lt; options operations &lt;---------------------------------------*/
+
+	inline void ProcessCmdLine::option(Option option)
+	{
+		options_.push_back(option);
+	}
+
+	inline ProcessCmdLine::Options ProcessCmdLine::options()
+	{
+		return options_;
+	}
+
+	inline bool ProcessCmdLine::hasOption(Option op)
+	{
+		for (auto item : options_)
+		{
+			if (item == op)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	inline void ProcessCmdLine::showOptions()
+	{
+		for (auto opt : options_)
+		{
+			out_ &lt;&lt; '/' &lt;&lt; char(opt) &lt;&lt; " ";
+		}
+	}
+
+	/*----&lt; patterns operations &lt;--------------------------------------*/
+
+	inline void ProcessCmdLine::pattern(const Pattern& pattern)
+	{
+		patterns_.push_back(pattern);
+	}
+
+	inline ProcessCmdLine::Patterns ProcessCmdLine::patterns()
+	{
+		return patterns_;
+	}
+
+	inline ProcessCmdLine::Regexes ProcessCmdLine::regexes()
+	{
+		return regexes_;
+	}
+
+	inline void ProcessCmdLine::showPatterns()
+	{
+		for (auto patt : patterns_)
+		{
+			out_ &lt;&lt; patt &lt;&lt; " ";
+		}
+	}
+
+	inline void ProcessCmdLine::showRegexes()
+	{
+		for (auto regex : regexes_)
+		{
+			out_ &lt;&lt; regex &lt;&lt; " ";
+		}
+	}
+
+	/*----&lt; maxItems operations &lt;--------------------------------------*/
+
+	inline void ProcessCmdLine::maxItems(Number maxItems)
+	{
+		maxItems_ = maxItems;
+	}
+
+	inline ProcessCmdLine::Number ProcessCmdLine::maxItems()
+	{
+		return maxItems_;
+	}
+
+	inline void ProcessCmdLine::showMaxItems()
+	{
+		if (maxItems_ != 0)
+			out_ &lt;&lt; maxItems_ &lt;&lt; " ";
+	}
+
+	inline bool ProcessCmdLine::isValidRegex(const std::string & regex)
+	{
+		bool res = true;
+		try
+		{
+			std::regex tmp(regex);
+		}
+		catch (const std::regex_error& e)
+		{
+			(e);
+			res = false;
+		}
+		return res;
+	}
+
+	/*----&lt; parseError operation &lt;-------------------------------------*/
+
+	inline bool ProcessCmdLine::parseError()
+	{
+		return parseError_;
+	}
+
+	/*----&lt; command line operations &lt;----------------------------------*/
+
+	inline ProcessCmdLine::ProcessCmdLine(int argc, char** argv, std::ostream& out) : out_(out)
+	{
+		//usage_ = defaultUsage();
+		if (argc &lt; 2)
+		{
+			out &lt;&lt; "\n  command line parse error";
+			//usage();
+			parseError_ = true;
+			return;
+		}
+
+		path_ = argv[1];
+
+		for (int i = 2; i &lt; argc; ++i)
+		{
+			if (argv[i][0] == '/')
+			{
+				if (strlen(argv[i]) &lt; 2)
+					continue;
+				options_.push_back(argv[i][1]);
+			}
+			else
+			{
+				int number = atoi(argv[i]);
+				if (number &lt; 0)
+				{
+					maxItems_ = number;
+				}
+				else if (isValidRegex(argv[i]))
+				{
+					regexes_.push_back(argv[i]);
+				}
+				else
+				{
+					patterns_.push_back(argv[i]);
+				}
+			}
+		}
+	}
+
+	inline void ProcessCmdLine::showCmdLine(int argc, char** argv)
+	{
+		if (argc &lt; 2)
+		{
+			out_ &lt;&lt; "  empty";
+			return;
+		}
+		for (int i = 0; i &lt; argc; ++i)
+		{
+			if (argv[i] == "0")
+				continue;
+			if (argv[i][0] == '/')
+			{
+				out_ &lt;&lt; "/" + char(argv[i][1]) &lt;&lt; " ";
+			}
+			else
+			{
+				out_ &lt;&lt; argv[i] &lt;&lt; " ";
+			}
+		}
+	}
+
+	inline void ProcessCmdLine::showCmdLine()
+	{
+		if (path_ == "" && options_.size() == 0 && patterns_.size() == 0)
+		{
+			out_ &lt;&lt; "empty";
+			return;
+		}
+		showPath();
+		preface("", false);
+		showOptions();
+		preface("", false);
+		showPatterns();
+		preface("", false);
+		showMaxItems();
+	}
+
+	inline void ProcessCmdLine::usage(const Usage& usage)
+	{
+		usage_ = usage;
+	}
+
+	inline void ProcessCmdLine::usage()
+	{
+		out_ &lt;&lt; usage_;
+	}
+
+	/////////////////////////////////////////////////////////////////////
+	// Converter class
+	// - supports converting unspecified types to and from strings
+	// - a type is convertible if it provides insertion and extraction
+	//   operators
+
+	template &lt;typename T&lt;
+	class Converter
+	{
+	public:
+		static std::string toString(const T& t);
+		static T toValue(const std::string& src);
+	};
+	//----&lt; convert t to a string &lt;--------------------------------------
+
+	template &lt;typename T&lt;
+	std::string Converter&lt;T&lt;::toString(const T& t)
+	{
+		std::ostringstream out;
+		out &lt;&lt; t;
+		return out.str();
+	}
+	//----&lt; convert a string to an instance of T &lt;-----------------------
+	/*
+	*  - the string must have been generated by Converter&lt;T&lt;::toString(const T& t)
+	*  - T::operator&lt;&lt; must be the inverse of T::operator&lt;&lt;
+	*/
+	template&lt;typename T&lt;
+	T Converter&lt;T&lt;::toValue(const std::string& src)
+	{
+		std::istringstream in(src);
+		T t;
+		in &lt;&lt; t;
+		return t;
+	}
+
+	///////////////////////////////////////////////////////////////////////
+	// Box class
+	// - wraps primitive type in class
+	// - preserves primitive syntax
+
+	template&lt;typename T&lt;
+	class Box
+	{
+	public:
+		Box() : primitive_(T()) {}
+		Box(const T& t) : primitive_(t) {}
+		operator T&() { return primitive_; }
+		T& operator=(const T& t) { primitive_ = t; return primitive_; }
+	private:
+		T primitive_;
+	};
+
+	///////////////////////////////////////////////////////////////////////
+	// ToXml interface
+	// - defines language for creating XML elements
+
+	struct ToXml
+	{
+		virtual std::string toXml(const std::string& tag) = 0;
+		virtual ~ToXml() {};
+	};
+
+	///////////////////////////////////////////////////////////////////////
+	// PersistFactory&lt;T&lt; class
+	// - wraps an instance of user-defined type
+	// - preserves semantics of user-defined type
+	// - adds toXml("tag") method
+
+	template&lt;typename T&lt;
+	class PersistFactory : public T, ToXml
+	{
+	public:
+		PersistFactory() = default;
+		PersistFactory(const T& t)
+		{
+			T::operator=(t);
+		}
+		std::string toXml(const std::string& tag)
+		{
+			std::ostringstream out;
+			out &lt;&lt; "&lt;" &lt;&lt; tag &lt;&lt; "&lt;" &lt;&lt; *this &lt;&lt; "&lt;/" &lt;&lt; tag &lt;&lt; "&lt;";
+			return out.str();
+		}
+	};
+}
+///////////////////////////////////////////////////////////////////////
+// CodeUtilities.cpp - small, generally useful, helper classes       //
+// ver 1.2                                                           //
+// Language:    C++, Visual Studio 2017                              //
+// Application: Most Projects, CSE687 - Object Oriented Design       //
+// Author:      Jim Fawcett, Syracuse University, CST 4-187          //
+//              jfawcett@twcny.rr.com                                //
+///////////////////////////////////////////////////////////////////////
+
+#include "CodeUtilities.h"
+#include "../StringUtilities/StringUtilities.h"
+#include &lt;string&lt;
+#include &lt;iostream&lt;
+#include &lt;functional&lt;
+
+#ifdef TEST_CODEUTILITIES
+
+using namespace Utilities;
+
+int main(int argc, char* argv[])
+{
+  Title("Testing CodeUtilities");
+  putline();
+
+  title("Testing ProcessCmdLine");
+  ProcessCmdLine pcl(argc, argv);
+  pcl.usage();
+
+  preface("Command Line: "); pcl.showCmdLine(argc, argv);
+  preface("path:     "); pcl.showPath();
+  preface("Options:  "); pcl.showOptions();
+  preface("Patterns: "); pcl.showPatterns();
+  preface("MaxItems: "); pcl.showMaxItems();
+  std::cout &lt;&lt; "\n";
+
+  preface("changing path: ");
+  pcl.path("c:\\su");
+  pcl.showPath();
+
+  preface("adding option: ");
+  pcl.option('/q');
+  pcl.showOptions();
+
+  preface("adding pattern: ");
+  pcl.pattern("*.htm");
+  pcl.showPatterns();
+
+  preface("changing maxItems: ");
+  pcl.maxItems(15);
+  pcl.showMaxItems();
+  putline();
+  preface("new command line: ");
+  pcl.showCmdLine();
+  putline();
+
+  title("Testing Box and PersistFactory");
+  Box&lt;double&lt; boxedDouble = 3.1415927;
+  std::cout &lt;&lt; "\n  boxedDouble = " &lt;&lt; boxedDouble;
+  boxedDouble = 0.33333;
+  std::cout &lt;&lt; "\n  boxedDouble = " &lt;&lt; boxedDouble;
+
+  PersistFactory&lt;std::string&lt; name = std::string("Jim");
+  name.append(" Fawcett");
+  std::cout &lt;&lt; "\n  " &lt;&lt; name.toXml("name");
+
+  PersistFactory&lt;Box&lt;double&lt;&lt; value = Box&lt;double&lt;(9.87654);
+  std::cout &lt;&lt; "\n  " &lt;&lt; value.toXml("value");
+  value += 3.14159;
+  std::cout &lt;&lt; "\n  " &lt;&lt; value.toXml("value");
+  std::cout &lt;&lt; "\n\n";
+
+  title("test std::string Converter&lt;T&lt;::toString(T)");
+
+  std::string conv1 = Converter&lt;double&lt;::toString(3.1415927);
+  std::string conv2 = Converter&lt;int&lt;::toString(73);
+  std::string conv3 = Converter&lt;std::string&lt;::toString("a_test_string plus more");
+
+  std::cout &lt;&lt; "\n  Converting from values to strings: ";
+  std::cout &lt;&lt; conv1 &lt;&lt; ", " &lt;&lt; conv2 &lt;&lt; ", " &lt;&lt; conv3;
+  putline();
+
+  title("test T Converter&lt;T&lt;::toValue(std::string)");
+
+  std::cout &lt;&lt; "\n  Converting from strings to values: ";
+  std::cout &lt;&lt; Converter&lt;double&lt;::toValue(conv1) &lt;&lt; ", ";
+  std::cout &lt;&lt; Converter&lt;int&lt;::toValue(conv2) &lt;&lt; ", ";
+  std::cout &lt;&lt; Converter&lt;std::string&lt;::toValue(conv3);
+
+  putline(2);
+  return 0;
+}
+#endif
+#pragma once
+///////////////////////////////////////////////////////////////////////////////////
+// Converter.h - Converter class to convert cpp files into html files            //
+// ver 1.3                                                                       //
+// Jim Fawcett, CSE687 - Object Oriented Design, Fall 2018                       //
+///////////////////////////////////////////////////////////////////////////////////
+/*
+ * Package Operations:
+ * -------------------
+ *Converter provides a class, of the same name, that has two functions, first,
+ *cpptohtml which takes a vector of string of files to be converted into html files
+ *and returns a vector of string of converted html files.
+ *Second, initialChecks function which takes the object of ProcessCmdLine class
+ *and which call DirectorExlorer-N to returns all the directories and subdirectories
+ *within directories and files with the matching pattern. initialChecks returns the vector
+ *of string of files which are to be converted to html files.
+ * 
+ * Public Interface:
+ * =================
+ * Converter conv;                    //To create object of converter class
+ * vector&lt;string&lt; files = conv.initialChecks(ProcessCmdLine obj);   //To retrieve all the files from a given directory
+ * vector&lt;string&lt; htmlFiles = conv.cpptohtml(vector&lt;string&lt; files); //To convert all the given files into valid html files 
+ *																	  and return their valid html file name
+ * bool success = writeHTML(string htmlFile, vector&lt;string&lt; fileContent); //To write cpp code to html file and returns true if success, 
+ *																			otherwise false
+ * display(Files);	//Function to display a list of files to be processed
+ *Required Files:
+ * ---------------
+ * DirExplore-N.h, DirExplorer-N.cpp  //Director Explorer Naive
+ * FileSystem.h, FileSystem.cpp       // Directory and Path classes
+ * StringUtilities.h                  // Title function
+ * CodeUtilities.h                    // ProcessCmdLine class
+ *
+ * Maintenance History:
+ * --------------------
+  * - Made initialChecks, cpptohtml funtions
+ * ver 1.0 : 26 Jan 2019
+ * - first release
+ */
+
+#include&lt;string&lt;
+#include&lt;vector&lt;
+#include "../CodeUtilities/CodeUtilities.h"
+
+namespace html {
+	using namespace std;
+	using namespace Utilities;
+
+	class Converter
+	{
+	public:
+		Converter();
+		~Converter();
+		void displayFiles(vector&lt;string&lt; Files);
+		bool writeHTML(string htmlFile, vector&lt;string&lt; fileContent);
+		vector&lt;string&lt; cpptohtml(vector&lt;string&lt; files);
+		vector&lt;string&lt; initialChecks(ProcessCmdLine &pcl);
+	};
+
+}
+///////////////////////////////////////////////////////////////////////////
+// Converter.cpp - class used convert a cpp file to html file           //                  
+// ver 1.0                                                              //
+// Jaskaran Singh, CSE687 - Object Oriented Design, Spring 2018         //
+//////////////////////////////////////////////////////////////////////////
+
+#include "Converter.h"
+#include &lt;iostream&lt;
+#include "../DirExplorer-Naive/DirExplorerN.h"
+#include&lt;regex&lt;
+#include&lt;conio.h&lt;
+#include "../StringUtilities/StringUtilities.h"
+
+//Using namespace to avoid ambiguity with converter in StringUtilities.h
+namespace html {
+	using namespace FileSystem;
+
+	//Default Constructor
+	Converter::Converter()
+	{
+	}
+
+	//Default Destructor
+	Converter::~Converter()
+	{
+	}
+
+	//A function which writes cpp code to html file and if it succeeds return true, otherwise false
+	bool Converter::writeHTML(string htmlFile, vector&lt;string&lt; fileContent) {
+		ofstream webpageOutput(htmlFile);
+		if (!webpageOutput.good()) {
+			cout &lt;&lt; "\n\n Unable to open the file";
+			return false;
+		}
+		webpageOutput &lt;&lt; "&lt;!Doctype html &lt;\n";
+		webpageOutput &lt;&lt; "&lt;html&lt;\n";
+		webpageOutput &lt;&lt; "&lt;head&lt;\n";
+		webpageOutput &lt;&lt; "&lt;/head&lt;\n";
+		webpageOutput &lt;&lt; "&lt;body&lt;\n";
+		webpageOutput &lt;&lt; "&lt;pre&lt;\n";
+		for (size_t i = 0; i &lt; fileContent.size(); i++)
+			webpageOutput &lt;&lt; fileContent[i] &lt;&lt; "\n";
+		webpageOutput &lt;&lt; "&lt;/pre&lt;\n";
+		webpageOutput &lt;&lt; "&lt;/body&lt;\n";
+		webpageOutput &lt;&lt; "&lt;/html&lt;\n";
+
+		webpageOutput.close();
+		return true;
+	}
+	
+	//Function to convert cpp files into html files
+	vector&lt;string&lt; Converter::cpptohtml(vector&lt;string&lt; files)
+	{
+		vector&lt;string&lt; htmlFiles;
+		vector&lt;string&lt; fileContent;
+		
+		ifstream in;
+		
+		for (size_t i = 0; i &lt; files.size(); i++)
+		{
+			try {
+				in.open(files[i]);
+				if (!in.good()) {
+					cout &lt;&lt; "\n\n Unable to Open the file";
+					return vector&lt;string&lt;();
+				}
+	
+				for (string line; getline(in, line); )
+				{
+					while(line.find("&lt;") != -1)
+						line.replace(line.find("&lt;"), 1, "&lt;");
+					while (line.find("&lt;") != -1)
+						line.replace(line.find("&lt;"), 1, "&lt;");
+					fileContent.push_back(line);
+				}
+
+				std::string name = Path::getName(files[i]);
+				std::string htmlFile = "../convertedPages/" + name + ".html";
+				std::string Path = Path::getFullFileSpec(htmlFile);
+				htmlFiles.push_back(Path);
+				
+				if (!writeHTML(htmlFile, fileContent))
+					return vector &lt;string&lt;();
+				
+				in.close();
+			}
+			catch (std::exception& e) {
+				cout &lt;&lt; "\n Error opening/reading/writing to the file. \n Exception:-  "&lt;&lt;e.what();
+			}
+		}
+		return htmlFiles;
+	}
+
+	//Function to display list of files
+	void Converter::displayFiles(vector&lt;string&lt; files) {
+		for (auto file : files)
+			cout &lt;&lt; "\n" &lt;&lt; file;
+		cout &lt;&lt; "\n";
+	}
+
+	//Function to check if the directory exists, and if it does 
+	//return all the files in the directory and sub-directory matching the pattern
+	vector&lt;string&lt; Converter::initialChecks(ProcessCmdLine &pcl) {
+		DirExplorerN de(pcl.path());
+		for (auto patt : pcl.patterns())
+		{
+			de.addPattern(patt);
+		}
+
+		if (pcl.hasOption('s'))
+		{
+			de.recurse();
+		}
+
+		de.search();
+
+		vector&lt;string&lt; Files = de.fileToProcess();
+		vector&lt;string&lt; CppToHtmlFiles;
+
+		cout &lt;&lt; "\nList of files before applying regex";
+		displayFiles(Files);
+
+		for (auto regeX : pcl.regexes()) {
+			regex s(regeX);
+			for (auto file : Files) {
+				auto fileName = Path::getName(file);
+				if (regex_match(fileName,s))
+					CppToHtmlFiles.push_back(file);
+			}
+			cout &lt;&lt; "\nList of files after applying regex"&lt;&lt;regeX;
+			//pcl.showRegexes();
+			displayFiles(CppToHtmlFiles);
+			/*cout &lt;&lt; "\n Files to be processed:-" &lt;&lt; CppToHtmlFiles.size();
+			cout &lt;&lt; "\n Following file will be converted into HTML file";
+			for (auto file : CppToHtmlFiles)
+				cout &lt;&lt; "\n " &lt;&lt; file;*/
+		}
+
+		
+
+		return CppToHtmlFiles;
+	}
+}
+
+//Test Stub for converter class
+#ifdef TEST_CONVERTER1
+
+using namespace Utilities;
+
+//function in case user provide invalid command line
+std::string customUsage()
+{
+	std::string usage;
+	usage += "\n  Command Line: path [/option]* [/pattern]*";
+	usage += "\n    path is relative or absolute path where processing begins";
+	usage += "\n    [/option]* are one or more options of the form:";
+	usage += "\n      /s - walk directory recursively";
+	//usage += "\n      /h - hide empty directories";
+	//usage += "\n      /a - on stopping, show all files in current directory";
+	usage += "\n    [pattern]* are one or more pattern strings of the form:";
+	usage += "\n      *.h *.cpp *.cs *.txt or *.*";
+	usage += "\n";
+	return usage;
+}
+
+int main(int argc, char** argv) {
+	Utilities::ProcessCmdLine cmdargs(argc, argv);
+	cmdargs.usage(customUsage());
+	putline();
+
+	Utilities::preface("Command Line: ");
+	cmdargs.showCmdLine();
+
+	cmdargs.showRegexes();
+
+	if (cmdargs.parseError())
+	{
+		cmdargs.usage();
+		std::cout &lt;&lt; "\n\n";
+		_getche();
+		return 1;
+	}
+	
+	std::vector&lt;std::string&lt; convertedFiles;
+	html::Converter conv;
+	convertedFiles = conv.cpptohtml(conv.initialChecks(cmdargs));
+
+	std::cout &lt;&lt; "\n  Converted files:\n";
+
+	for (auto file : convertedFiles)
+		std::cout &lt;&lt; "  " &lt;&lt; file &lt;&lt; "\n";
+
+	_getche();
+	return 0;
+}
+#endif
+
+#ifndef FILESYSTEM_H
+#define FILESYSTEM_H
+/////////////////////////////////////////////////////////////////////////////
+// FileSystem.h - Support file and directory operations                    //
+// ver 2.8                                                                 //
+// ----------------------------------------------------------------------- //
+// copyright © Jim Fawcett, 2012                                           //
+// All rights granted provided that this notice is retained                //
+// ----------------------------------------------------------------------- //
+// Language:    Visual C++, Visual Studio 2010                             //
+// Platform:    Dell XPS 8300, Core i7, Windows 7 SP1                      //
+// Application: Summer Projects, 2012                                      //
+// Author:      Jim Fawcett, CST 4-187, Syracuse University                //
+//              (315) 443-3948, jfawcett@twcny.rr.com                      //
+/////////////////////////////////////////////////////////////////////////////
+/*
+ * Module Operations:
+ * ==================
+ * This module provides classes, File, FileInfo, Path, Directory, and 
+ * FileSystemSearch.
+ *
+ * The File class supports opening text and binary files for either input 
+ * or output.  File objects have names, get and put lines of text, get and
+ * put blocks of bytes if binary, can be tested for operational state,
+ * cleared of errors, and output File objects can be flushed to their streams.
+ *
+ * FileInfo class accepts a fully qualified filespec and supports queries
+ * concerning name, time and date, size, and attributes.  You can compare
+ * FileInfo objects by name, date, and size.
+ *
+ * Path class provides static methods to turn a relative filespec into an
+ * absolute filespec, return the path, name, or extension of the filespec,
+ * and build filespecs from path and name.  Path also provides methods to
+ * convert filespecs to uppercase and to lowercase.
+ *
+ * The Directory class supports getting filenames or directories from a 
+ * fully qualified filespec, e.g., path + filename pattern using static
+ * methods.  It also provides non-static methods to get and set the current
+ * directory.
+ *
+ * Public Interface:
+ * =================
+ * File f(filespec,File::in,File::binary);
+ * File g(filespec,File::out,File::binary);
+ * while(f.isGood()) {
+ *   block b = f.getBlock();
+ *   g.putBlock(b);
+ * }
+ * File h(filespec,File::in);
+ * h.readLine();
+ *
+ * FileInfo fi("..\foobar.txt");
+ * if(fi.good())
+ *   ...
+ * std::string filespec = "..\temp.txt";
+ * std::string fullyqualified = Path::getFullFileSpec(filename);
+ *  -- This uses the current path to expand a relative path.
+ *  -- If you have a filespec relative to some other path
+ *  -- you need to setCurrentPath(newPath), use getFullFileSpec(...)
+ *  -- then reset the current path with setCurrentPath(origPath)
+ * std::string fullyqualified = Path::fileSpec(path, filename);
+ *  -- This simply concatenates path with filename
+ * std::string path = Path::getPath(fullyqualified);
+ * std::string name = Path::getName(fullyqualified);
+ * std::string extn = Path::getExt(fullyqualified);
+ *
+ * Directory d;
+ * std::string dir = d.getCurrentDirectory();
+ * d.setCurrentDirectory(dir);
+ * std::vector&lt;std::string&lt; files = Directory::getFiles(path, pattern);
+ * std::vector&lt;std::string&lt; dirs = Directory::getDirectories(path);
+ * 
+ * Required Files:
+ * ===============
+ * FileSystem.h, FileSystem.cpp
+ *
+ * Build Command:
+ * ==============
+ * cl /EHa /DTEST_FILESYSTEM FileSystem.cpp
+ *
+ * Maintenance History:
+ * ====================
+ * ver 2.8 : 23 Feb 2018
+ * - Fixed bug in FileSystem.cpp main() which added one
+ *   test for file open success.
+ * ver 2.7 : 28 May 2017
+ * - Fixed bug by closing files in FileInfo destructor.
+ *   Thanks to Kaiqi Zhang for finding bug and proposing
+ *   it's solution.
+ * ver 2.6 : 04 Apr 15
+ * - added File::getBuffer(...) and File::putBuffer(...) for use with
+ *   Sockets package.
+ * ver 2.5 : 02 Feb 15
+ * - added test for empty file in File::readAll()
+ * - fixed a debug assert that happens in std::isspace in File::ReadAll()
+ *   on certain non-ascii characters that may occur in a binary file.
+ *   The fix was to replace std::isspace(char) with an overload
+ *   std::isspace(char, locale&) from the standard locale library.
+ * - added some demo code in test stub to show how to handle attempting
+ *   to read non-text file with File::ReadLine() and File::readAll();
+ * ver 2.4 : 01 Feb 15
+ * - added File::readAll()
+ * - improved test stub testing
+ * ver 2.3 : 31 Jan 15
+ * - fixed bug in File::getLine() discovered by Huanming Fang
+ *   This appears to be a change in behavior of istream::getline(...) with C++11
+ * - added comments in Public Interface, above, to clarify way that Path::getFullFileSpec
+ *   and Path::fileSpec work.
+ * ver 2.2 : 23 Feb 13
+ * - fixed bug in Path::getExt(...) discovered by Yang Zhou and Kevin Kong
+ * ver 2.1 : 07 Jun 12
+ * - moved FileSystemSearch to cpp file to make private
+ * - added bool withExt parameter to Path::getName
+ * - made Directory's getCurrentDirectory and setCurrentDirectory static
+ * - added exists, create, and remove to Directory class
+ * ver 2.0 : 04 Jun 12
+ * - made a few small changes to provide same interface as 
+ *   Linux version.
+ * ver 1.0 : 31 Jan 09
+ * - first release
+ */
+#include &lt;fstream&lt;
+#include &lt;string&lt;
+#include &lt;vector&lt;
+#include &lt;windows.h&lt;
+
+namespace FileSystem
+{
+  /////////////////////////////////////////////////////////
+  // Block
+  
+  typedef char Byte;
+
+  class Block
+  {
+  public:
+    Block(size_t size=0) : bytes_(size) {}
+    Block(Byte* beg, Byte* end);
+    void push_back(Byte b);
+    Byte& operator[](size_t i);
+    Byte operator[](size_t i) const;
+    bool operator==(const Block&) const;
+    bool operator!=(const Block&) const;
+    size_t size() const;
+  private:
+    std::vector&lt;Byte&lt; bytes_;
+  };
+
+  /////////////////////////////////////////////////////////
+  // File
+  
+  class File
+  {
+  public:
+    using byte = char;
+    enum direction { in, out };
+    enum type { text, binary };
+    File(const std::string& filespec);
+    bool open(direction dirn, type typ=File::text);
+    ~File();
+    std::string name();
+    std::string getLine(bool keepNewLine = false);
+    std::string readAll(bool KeepNewLines = false);
+    void putLine(const std::string& line, bool wantReturn=true);
+    Block getBlock(size_t size);
+    void putBlock(const Block&);
+    size_t getBuffer(size_t bufLen, byte* buffer);
+    void putBuffer(size_t bufLen, byte* buffer);
+    bool isGood();
+    void clear();
+    void flush();
+    void close();
+    static bool exists(const std::string& file);
+    static bool copy(const std::string& src, const std::string& dst, bool failIfExists=false);
+    static bool remove(const std::string& filespec);
+  private:
+    std::string name_;
+    std::ifstream* pIStream;
+    std::ofstream* pOStream;
+    direction dirn_;
+    type typ_;
+    bool good_;
+  };
+
+  inline std::string File::name() { return name_; }
+
+  /////////////////////////////////////////////////////////
+  // FileInfo
+
+  class FileInfo
+  {
+  public:
+    enum dateFormat { fullformat, timeformat, dateformat };
+    FileInfo(const std::string& fileSpec);
+    ~FileInfo();
+    bool good();
+    std::string name() const;
+    std::string date(dateFormat df=fullformat) const;
+    size_t size() const;
+    
+    bool isArchive() const;
+    bool isCompressed() const;
+    bool isDirectory() const;
+    bool isEncrypted() const;
+    bool isHidden() const;
+    bool isNormal() const;
+    bool isOffLine() const;
+    bool isReadOnly() const;
+    bool isSystem() const;
+    bool isTemporary() const;
+
+    bool operator&lt;(const FileInfo& fi) const;
+    bool operator==(const FileInfo& fi) const;
+    bool operator&lt;(const FileInfo& fi) const;
+    bool earlier(const FileInfo& fi) const;
+    bool later(const FileInfo& fi) const;
+    bool smaller(const FileInfo& fi) const;
+    bool larger(const FileInfo& fi) const;
+  private:
+    bool good_;
+    static std::string intToString(long i);
+    WIN32_FIND_DATAA data;
+    HANDLE hFindFile;
+  };
+
+  /////////////////////////////////////////////////////////
+  // Path
+
+  class Path
+  {
+  public:
+    static std::string getFullFileSpec(const std::string& fileSpec);
+    static std::string getPath(const std::string& fileSpec);
+    static std::string getName(const std::string& fileSpec, bool withExt=true);
+    static std::string getExt(const std::string& fileSpec);
+    static std::string fileSpec(const std::string& path, const std::string& name);
+    static std::string toLower(const std::string& src);
+    static std::string toUpper(const std::string& src);
+  };
+  
+  /////////////////////////////////////////////////////////
+  // Directory
+
+  class Directory
+  {
+  public:
+    static bool create(const std::string& path);
+    static bool remove(const std::string& path);
+    static bool exists(const std::string& path);
+    static std::string getCurrentDirectory();
+    static bool setCurrentDirectory(const std::string& path);
+    static std::vector&lt;std::string&lt; getFiles(const std::string& path=".", const std::string& pattern="*.*");
+    static std::vector&lt;std::string&lt; getDirectories(const std::string& path=".", const std::string& pattern="*.*");
+  private:
+    //static const int BufSize = 255;
+    //char buffer[BufSize];
+  };
+}
+
+#endif
+</pre>
+</body>
+</html>
