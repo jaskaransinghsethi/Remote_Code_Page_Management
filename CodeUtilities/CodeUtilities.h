@@ -119,7 +119,6 @@ namespace Utilities
 		void showPatterns();
 		void showRegexes();
 		void showMaxItems();
-
 	private:
 		bool isValidRegex(const std::string& regex);
 	private:

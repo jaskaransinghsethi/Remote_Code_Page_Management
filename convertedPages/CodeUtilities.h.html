@@ -1,20 +1,26 @@
 <!Doctype html >
 <html>
 <head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
 </head>
 <body>
-<pre>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
 #pragma once
-///////////////////////////////////////////////////////////////////////
-// CodeUtilities.h - small, generally useful, helper classes         //
-// ver 1.3                                                           //
-// Language:    C++, Visual Studio 2017                              //
-// Application: Most Projects, CSE687 - Object Oriented Design       //
-// Author:      Ammar Salmon, TA, CSE687                             //
-// Source:      Jim Fawcett, Syracuse University, CST 4-187          //
-//              jfawcett@twcny.rr.com                                //
-///////////////////////////////////////////////////////////////////////
-/*
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// CodeUtilities.h - small, generally useful, helper classes         //</div>
+<div class="comments">// ver 1.3                                                           //</div>
+<div class="comments">// Language:    C++, Visual Studio 2017                              //</div>
+<div class="comments">// Application: Most Projects, CSE687 - Object Oriented Design       //</div>
+<div class="comments">// Author:      Ammar Salmon, TA, CSE687                             //</div>
+<div class="comments">// Source:      Jim Fawcett, Syracuse University, CST 4-187          //</div>
+<div class="comments">//              jfawcett@twcny.rr.com                                //</div>
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+<div class="comments">/*
 * Package Operations:
 * -------------------
 * This package provides classes:
@@ -54,7 +60,7 @@
 * Planned Additions and Changes:
 * ------------------------------
 * - none yet
-*/
+*/</div>
 
 #include &lt;vector&gt;
 #include &lt;string&gt;
@@ -64,17 +70,17 @@
 
 namespace Utilities
 {
-	/////////////////////////////////////////////////////////////////////
-	// preface function
-	// - used to add a string preface to an output, e.g., "\n  "
+	<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// preface function</div>
+	<div class="comments">// - used to add a string preface to an output, e.g., "\n  "</div>
 
 	inline void preface(const std::string& msg = "", bool doReturn = true, std::ostream& out = std::cout, const std::string& prefix = "  ")
-	{
+<div class="functions">	{
 		if (doReturn) out &lt;&lt; "\n" &lt;&lt; prefix &lt;&lt; msg;
-	}
+	}</div>
 
 	inline std::string defaultUsage()
-	{
+<div class="functions">	{
 		std::string usage;
 		usage += "\n  Command Line: path [/option]* [/pattern]* [integer]";
 		usage += "\n    path is relative or absolute path where processing begins";
@@ -83,14 +89,14 @@ namespace Utilities
 		usage += "\n    [integer] is the maximum number of items to process";
 		usage += "\n";
 		return usage;
-	}
+	}</div>
 
-	/////////////////////////////////////////////////////////////////////
-	// ProcessCmdLine class
-	// - extracts path, patterns, options, number
+	<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// ProcessCmdLine class</div>
+	<div class="comments">// - extracts path, patterns, options, number</div>
 
 	class ProcessCmdLine
-	{
+<div class="classes">	{
 	public:
 		using Usage = std::string;
 		using Path = std::string;
@@ -125,7 +131,6 @@ namespace Utilities
 		void showPatterns();
 		void showRegexes();
 		void showMaxItems();
-
 	private:
 		bool isValidRegex(const std::string& regex);
 	private:
@@ -137,39 +142,39 @@ namespace Utilities
 		int maxItems_ = 0;
 		bool parseError_ = false;
 		std::ostream& out_;
-	};
+	};</div>
 
-	/*----&lt; path operations &gt;------------------------------------------*/
+	<div class="comments">/*----&lt; path operations &gt;------------------------------------------*/</div>
 
 	inline void ProcessCmdLine::path(const Path& path)
-	{
+<div class="functions">	{
 		path_ = path;
-	}
+	}</div>
 
 	inline ProcessCmdLine::Path ProcessCmdLine::path()
-	{
+<div class="functions">	{
 		return path_;
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showPath()
-	{
+<div class="functions">	{
 		out_ &lt;&lt; path_ &lt;&lt; " ";
-	}
+	}</div>
 
-	/*----&lt; options operations &gt;---------------------------------------*/
+	<div class="comments">/*----&lt; options operations &gt;---------------------------------------*/</div>
 
 	inline void ProcessCmdLine::option(Option option)
-	{
+<div class="functions">	{
 		options_.push_back(option);
-	}
+	}</div>
 
 	inline ProcessCmdLine::Options ProcessCmdLine::options()
-	{
+<div class="functions">	{
 		return options_;
-	}
+	}</div>
 
 	inline bool ProcessCmdLine::hasOption(Option op)
-	{
+<div class="functions">	{
 		for (auto item : options_)
 		{
 			if (item == op)
@@ -178,69 +183,69 @@ namespace Utilities
 			}
 		}
 		return false;
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showOptions()
-	{
+<div class="functions">	{
 		for (auto opt : options_)
 		{
 			out_ &lt;&lt; '/' &lt;&lt; char(opt) &lt;&lt; " ";
 		}
-	}
+	}</div>
 
-	/*----&lt; patterns operations &gt;--------------------------------------*/
+	<div class="comments">/*----&lt; patterns operations &gt;--------------------------------------*/</div>
 
 	inline void ProcessCmdLine::pattern(const Pattern& pattern)
-	{
+<div class="functions">	{
 		patterns_.push_back(pattern);
-	}
+	}</div>
 
 	inline ProcessCmdLine::Patterns ProcessCmdLine::patterns()
-	{
+<div class="functions">	{
 		return patterns_;
-	}
+	}</div>
 
 	inline ProcessCmdLine::Regexes ProcessCmdLine::regexes()
-	{
+<div class="functions">	{
 		return regexes_;
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showPatterns()
-	{
+<div class="functions">	{
 		for (auto patt : patterns_)
 		{
 			out_ &lt;&lt; patt &lt;&lt; " ";
 		}
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showRegexes()
-	{
+<div class="functions">	{
 		for (auto regex : regexes_)
 		{
 			out_ &lt;&lt; regex &lt;&lt; " ";
 		}
-	}
+	}</div>
 
-	/*----&lt; maxItems operations &gt;--------------------------------------*/
+	<div class="comments">/*----&lt; maxItems operations &gt;--------------------------------------*/</div>
 
 	inline void ProcessCmdLine::maxItems(Number maxItems)
-	{
+<div class="functions">	{
 		maxItems_ = maxItems;
-	}
+	}</div>
 
 	inline ProcessCmdLine::Number ProcessCmdLine::maxItems()
-	{
+<div class="functions">	{
 		return maxItems_;
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showMaxItems()
-	{
+<div class="functions">	{
 		if (maxItems_ != 0)
 			out_ &lt;&lt; maxItems_ &lt;&lt; " ";
-	}
+	}</div>
 
 	inline bool ProcessCmdLine::isValidRegex(const std::string & regex)
-	{
+<div class="functions">	{
 		bool res = true;
 		try
 		{
@@ -252,24 +257,24 @@ namespace Utilities
 			res = false;
 		}
 		return res;
-	}
+	}</div>
 
-	/*----&lt; parseError operation &gt;-------------------------------------*/
+	<div class="comments">/*----&lt; parseError operation &gt;-------------------------------------*/</div>
 
 	inline bool ProcessCmdLine::parseError()
-	{
+<div class="functions">	{
 		return parseError_;
-	}
+	}</div>
 
-	/*----&lt; command line operations &gt;----------------------------------*/
+	<div class="comments">/*----&lt; command line operations &gt;----------------------------------*/</div>
 
 	inline ProcessCmdLine::ProcessCmdLine(int argc, char** argv, std::ostream& out) : out_(out)
-	{
-		//usage_ = defaultUsage();
+<div class="functions">	{
+		<div class="comments">//usage_ = defaultUsage();</div>
 		if (argc &lt; 2)
 		{
 			out &lt;&lt; "\n  command line parse error";
-			//usage();
+			<div class="comments">//usage();</div>
 			parseError_ = true;
 			return;
 		}
@@ -301,10 +306,10 @@ namespace Utilities
 				}
 			}
 		}
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showCmdLine(int argc, char** argv)
-	{
+<div class="functions">	{
 		if (argc &gt; 2)
 		{
 			out_ &lt;&lt; "  empty";
@@ -323,10 +328,10 @@ namespace Utilities
 				out_ &lt;&lt; argv[i] &lt;&lt; " ";
 			}
 		}
-	}
+	}</div>
 
 	inline void ProcessCmdLine::showCmdLine()
-	{
+<div class="functions">	{
 		if (path_ == "" && options_.size() == 0 && patterns_.size() == 0)
 		{
 			out_ &lt;&lt; "empty";
@@ -339,103 +344,103 @@ namespace Utilities
 		showPatterns();
 		preface("", false);
 		showMaxItems();
-	}
+	}</div>
 
 	inline void ProcessCmdLine::usage(const Usage& usage)
-	{
+<div class="functions">	{
 		usage_ = usage;
-	}
+	}</div>
 
 	inline void ProcessCmdLine::usage()
-	{
+<div class="functions">	{
 		out_ &lt;&lt; usage_;
-	}
+	}</div>
 
-	/////////////////////////////////////////////////////////////////////
-	// Converter class
-	// - supports converting unspecified types to and from strings
-	// - a type is convertible if it provides insertion and extraction
-	//   operators
+	<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// Converter class</div>
+	<div class="comments">// - supports converting unspecified types to and from strings</div>
+	<div class="comments">// - a type is convertible if it provides insertion and extraction</div>
+	<div class="comments">//   operators</div>
 
 	template &lt;typename T&gt;
 	class Converter
-	{
+<div class="classes">	{
 	public:
 		static std::string toString(const T& t);
 		static T toValue(const std::string& src);
-	};
-	//----&lt; convert t to a string &gt;--------------------------------------
+	};</div>
+	<div class="comments">//----&lt; convert t to a string &gt;--------------------------------------</div>
 
 	template &lt;typename T&gt;
 	std::string Converter&lt;T&gt;::toString(const T& t)
-	{
+<div class="functions">	{
 		std::ostringstream out;
 		out &lt;&lt; t;
 		return out.str();
-	}
-	//----&lt; convert a string to an instance of T &gt;-----------------------
-	/*
+	}</div>
+	<div class="comments">//----&lt; convert a string to an instance of T &gt;-----------------------</div>
+	<div class="comments">/*
 	*  - the string must have been generated by Converter&lt;T&gt;::toString(const T& t)
 	*  - T::operator&gt;&gt; must be the inverse of T::operator&lt;&lt;
-	*/
+	*/</div>
 	template&lt;typename T&gt;
 	T Converter&lt;T&gt;::toValue(const std::string& src)
-	{
+<div class="functions">	{
 		std::istringstream in(src);
 		T t;
 		in &gt;&gt; t;
 		return t;
-	}
+	}</div>
 
-	///////////////////////////////////////////////////////////////////////
-	// Box class
-	// - wraps primitive type in class
-	// - preserves primitive syntax
+	<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// Box class</div>
+	<div class="comments">// - wraps primitive type in class</div>
+	<div class="comments">// - preserves primitive syntax</div>
 
 	template&lt;typename T&gt;
 	class Box
-	{
+<div class="classes">	{
 	public:
-		Box() : primitive_(T()) {}
-		Box(const T& t) : primitive_(t) {}
+		Box() : primitive_(T()) <div class="functions">{}</div>
+		Box(const T& t) : primitive_(t) <div class="functions">{}</div>
 		operator T&() { return primitive_; }
-		T& operator=(const T& t) { primitive_ = t; return primitive_; }
+		T& operator=(const T& t) <div class="functions">{ primitive_ = t; return primitive_; }</div>
 	private:
 		T primitive_;
-	};
+	};</div>
 
-	///////////////////////////////////////////////////////////////////////
-	// ToXml interface
-	// - defines language for creating XML elements
+	<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// ToXml interface</div>
+	<div class="comments">// - defines language for creating XML elements</div>
 
 	struct ToXml
-	{
+<div class="classes">	{
 		virtual std::string toXml(const std::string& tag) = 0;
-		virtual ~ToXml() {};
-	};
+		virtual ~ToXml() <div class="functions">{}</div>;
+	};</div>
 
-	///////////////////////////////////////////////////////////////////////
-	// PersistFactory&lt;T&gt; class
-	// - wraps an instance of user-defined type
-	// - preserves semantics of user-defined type
-	// - adds toXml("tag") method
+	<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+	<div class="comments">// PersistFactory&lt;T&gt; class</div>
+	<div class="comments">// - wraps an instance of user-defined type</div>
+	<div class="comments">// - preserves semantics of user-defined type</div>
+	<div class="comments">// - adds toXml("tag") method</div>
 
 	template&lt;typename T&gt;
 	class PersistFactory : public T, ToXml
-	{
+<div class="classes">	{
 	public:
 		PersistFactory() = default;
 		PersistFactory(const T& t)
-		{
+	<div class="functions">	{
 			T::operator=(t);
-		}
+		}</div>
 		std::string toXml(const std::string& tag)
-		{
+	<div class="functions">	{
 			std::ostringstream out;
 			out &lt;&lt; "&lt;" &lt;&lt; tag &lt;&lt; "&gt;" &lt;&lt; *this &lt;&lt; "&lt;/" &lt;&lt; tag &lt;&lt; "&gt;";
 			return out.str();
-		}
-	};
+		}</div>
+	};</div>
 }
 </pre>
 </body>

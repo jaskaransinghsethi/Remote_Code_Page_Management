@@ -128,17 +128,14 @@
     <ProjectReference Include="..\Converter\Converter.vcxproj">
       <Project>{eb8eed7e-1b42-420f-ad5d-1a2ea81e43b6}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\DependencyT\DependencyT.vcxproj">
+      <Project>{e0979261-85b7-4ad5-85c8-3fccb2d6e955}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\DirExplorer-Naive\DirExplorer-Naive.vcxproj">
       <Project>{8006bb01-ee84-43ea-9c98-4216a68f2530}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Display\Display.vcxproj">
       <Project>{03eaa4a4-97ca-41ab-b298-b57acaf206ca}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\FileSystem\FileSystemDemo.vcxproj">
-      <Project>{ef4a3188-ca93-45a2-ab52-7548669e3aa8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\StringUtilities\Utilities.vcxproj">
-      <Project>{462b43b2-8b13-4178-bf2a-903f76f1985c}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,5 +1,5 @@
-cd "..\OOD_PROJECT1\Debug\
+cd "..\OOD_PROJECT2\Debug\
 
-start Executive.exe .. /s *h *.cpp [A-B](.*)
+start Executive.exe .. /s *h *.cpp [H](.*)
 
-start Executive.exe .. /s *.h *.cpp [A-C](.*)
+start Executive.exe .. /s *.h *.cpp [B-C](.*)

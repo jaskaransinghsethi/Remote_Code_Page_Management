@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////
-// Converter.cpp - class used convert a cpp file to html file           //                  
+// Converter.cpp - class used convert a cpp file to html file           //   
 // ver 1.0                                                              //
 // Jaskaran Singh, CSE687 - Object Oriented Design, Spring 2018         //
 //////////////////////////////////////////////////////////////////////////
@@ -25,21 +25,156 @@ namespace html {
 	{
 	}
 
+	void Converter::handleClass(size_t &i, vector<string> &line, size_t &lineNo) {
+		i = line[lineNo - 1].find("\t{");
+		if (i != line[lineNo - 1].npos) {
+			line[lineNo - 1].replace(i, 2, "<div class=\"classes\">\t{");
+		}
+		else {
+			i = line[lineNo - 1].find("{");
+			if (i != line[lineNo - 1].npos)
+				line[lineNo - 1].replace(i, 1, "<div class=\"classes\">{");
+		}
+	}
+
+	void Converter::handleFunction(size_t &i, vector<string> &line, size_t &lineNo) {
+		i = line[lineNo - 1].find("\t{");
+		if (i != line[lineNo - 1].npos) {
+			line[lineNo - 1].replace(i, 2, "<div class=\"functions\">\t{");
+		}
+		else {
+			i = line[lineNo - 1].find("{");
+			if (i != line[lineNo - 1].npos)
+				line[lineNo - 1].replace(i, 1, "<div class=\"functions\">{");
+		}
+	}
+
+	void Converter::handleOneLnFOpen(size_t &i, vector<string> &line, size_t &lineNo) {
+		i = line[lineNo - 1].find("\t{");
+		if (i != line[lineNo - 1].npos) {
+			line[lineNo - 1].replace(i, 2, "<div class=\"functions\">\t{");
+		}
+		else {
+			i = line[lineNo - 1].find("{");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 1, "<div class=\"functions\">{");
+			}
+		}
+	}
+
+	void Converter::handleOneLnFClose(size_t &i, vector<string> &line, size_t &lineNo) {
+		i = line[lineNo - 1].find("\t}");
+		if (i != line[lineNo - 1].npos) {
+			line[lineNo - 1].replace(i, 2, "\t}</div>");
+		}
+		else {
+			i = line[lineNo - 1].find("}");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 1, "}</div>");
+			}
+		}
+	}
+
+	void Converter::handleSwitch(size_t &i, vector<string> &line, std::map<std::size_t, DependencyT::TypeInfo>::iterator &iter2, size_t &lineNo) {
+		switch (iter2->second) {
+		case DependencyT::TypeInfo::clas:
+			handleClass(i, line, lineNo);
+			break;
+		case DependencyT::TypeInfo::function:
+			handleFunction(i, line, lineNo);
+			break;
+		case DependencyT::TypeInfo::oneLineFn:
+			handleOneLnFOpen(i, line, lineNo);
+			handleOneLnFClose(i, line, lineNo);
+			break;
+		case DependencyT::TypeInfo::end:
+			i = line[lineNo - 1].find("\t};");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 3, "\t};</div>"); break;
+			}
+			i = line[lineNo - 1].find("};");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 2, "};</div>"); break;
+			}
+			i = line[lineNo - 1].find("\t}");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 2, "\t}</div>"); break;
+			}
+			i = line[lineNo - 1].find("}");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 1, "}</div>"); break;
+			}
+			i = line[lineNo - 1].find("\t*/");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 3, "\t*/</div>"); break;
+			}
+			i = line[lineNo - 1].find("*/");
+			if (i != line[lineNo - 1].npos) {
+				line[lineNo - 1].replace(i, 2, "*/</div>"); break;
+			}break;
+		default: break;
+		}
+	}
+
+	//A function to add div tags at appropriate places
+	void Converter::addDiv(string file, vector<string> &line, std::map<std::string, std::map<std::size_t, DependencyT::TypeInfo>> &LT) {
+		std::map<std::string, std::map<std::size_t, DependencyT::TypeInfo>>::iterator iter = LT.find(file);
+		if (iter != LT.end()) {
+			std::map<std::size_t, DependencyT::TypeInfo>::iterator iter2 = iter->second.begin();
+			size_t i;
+			while (iter2 != iter->second.end())
+			{
+				size_t lineNo = iter2->first;
+				handleSwitch(i, line, iter2, lineNo);
+				iter2++;
+			}
+		}
+	}
+
+	//A function to add Pre tags to HTML file
+	void Converter::addPreTags(ofstream& webpageOutput) {
+		webpageOutput << "<!Doctype html >\n";
+		webpageOutput << "<html>\n";
+		webpageOutput << "<head>\n";
+		webpageOutput << "<link rel = \"stylesheet\" href = \"style.css\">\n";
+		webpageOutput << "<script src=\"showHideClass.js\"></script>\n";
+		webpageOutput << "</head>\n";
+		webpageOutput << "<body>\n";
+		webpageOutput << "<button onclick = \"showHideClass(\'classes\')\">Show or Hide Class Contents</button>\n";
+		webpageOutput << "<button onclick = \"showHideClass(\'functions\')\">Show or Hide Function Contents</button>\n";
+		webpageOutput << "<button onclick = \"showHideClass(\'comments\')\">Show or Hide Comments</button>\n";
+		webpageOutput << "<button onclick = \"showHideALL(\'comments\')\">Show or Hide All</button>\n";
+		webpageOutput << "<br>";
+	}
+	
 	//A function which writes cpp code to html file and if it succeeds return true, otherwise false
-	bool Converter::writeHTML(string htmlFile, vector<string> fileContent) {
+	bool Converter::writeHTML(string htmlFile, vector<string> fileContent, vector<string> dep, std::map<std::string, std::map<std::size_t, DependencyT::TypeInfo>> &LT) {
+
 		ofstream webpageOutput(htmlFile);
 		if (!webpageOutput.good()) {
 			cout << "\n\n Unable to open the file";
 			return false;
 		}
-		webpageOutput << "<!Doctype html >\n";
-		webpageOutput << "<html>\n";
-		webpageOutput << "<head>\n";
-		webpageOutput << "</head>\n";
-		webpageOutput << "<body>\n";
+
+		addPreTags(webpageOutput);
+
+		if (dep.size() > 0) {
+			for (size_t i = 0; i < dep.size(); i++) {
+				int pos = dep[i].find_last_of("\"");
+				std::string str = "\"" + dep[i].substr(0, pos) + ".html";
+				webpageOutput << "<h3><a href=" + str + "\">" << dep[i] << "</a>" << "&nbsp;&nbsp;&nbsp;</h3>";
+			}
+		}
+		else {
+			webpageOutput << "<h3>This File is not dependent on any other file</h3>";
+		}
+		webpageOutput << "<hr>";
+
 		webpageOutput << "<pre>\n";
 		for (size_t i = 0; i < fileContent.size(); i++)
 			webpageOutput << fileContent[i] << "\n";
+		
+		
 		webpageOutput << "</pre>\n";
 		webpageOutput << "</body>\n";
 		webpageOutput << "</html>\n";
@@ -49,15 +184,15 @@ namespace html {
 	}
 	
 	//Function to convert cpp files into html files
-	vector<string> Converter::cpptohtml(vector<string> files)
+	vector<string> Converter::cpptohtml(vector<string> files, map<string, vector<string>> depTable, std::map<std::string, std::map<std::size_t, DependencyT::TypeInfo>> &LT)
 	{
 		vector<string> htmlFiles;
-		vector<string> fileContent;
 		
 		ifstream in;
 		
 		for (size_t i = 0; i < files.size(); i++)
 		{
+			vector<string> fileContent;
 			try {
 				in.open(files[i]);
 				if (!in.good()) {
@@ -74,15 +209,24 @@ namespace html {
 					fileContent.push_back(line);
 				}
 
+				addDiv(files[i], fileContent, LT);
+				handleComments(fileContent);
 				std::string name = Path::getName(files[i]);
+				auto iter = depTable.find(files[i]);
+				std::vector<string> dep;
+				if (iter != depTable.end()) {
+					for (size_t i = 0; i < iter->second.size(); i++)
+						dep.push_back(iter->second[i]);
+				}
 				std::string htmlFile = "../convertedPages/" + name + ".html";
 				std::string Path = Path::getFullFileSpec(htmlFile);
 				htmlFiles.push_back(Path);
 				
-				if (!writeHTML(htmlFile, fileContent))
+				if (!writeHTML(htmlFile, fileContent, dep, LT))
 					return vector <string>();
 				
 				in.close();
+				fileContent.clear();
 			}
 			catch (std::exception& e) {
 				cout << "\n Error opening/reading/writing to the file. \n Exception:-  "<<e.what();
@@ -140,6 +284,32 @@ namespace html {
 
 		return CppToHtmlFiles;
 	}
+
+	//A function to add div tags before and after comments
+	void Converter::handleComments(vector<string>& fileContent)
+	{
+		bool isComment = false;
+		size_t found;
+		for (size_t i = 0; i < fileContent.size(); i++) {
+			found = fileContent[i].find("//");
+			if (found != fileContent[i].npos) {
+				fileContent[i].replace(found, 2, "<div class=\"comments\">//");
+				fileContent[i].replace(fileContent[i].size(), fileContent[i].size(), "</div>");
+			}
+			found = fileContent[i].find("/*");
+			if (found != fileContent[i].npos) {
+				isComment = true;
+				fileContent[i].replace(found, 2, "<div class=\"comments\">/*");
+			}
+			if (isComment) {
+				size_t muLineC = fileContent[i].find("*/");
+				if (muLineC != fileContent[i].npos) {
+					fileContent[i].replace(muLineC, 2, "*/</div>");
+					isComment = false;
+				}
+			}
+		}
+	}
 }
 
 //Test Stub for converter class
@@ -181,14 +351,8 @@ int main(int argc, char** argv) {
 		return 1;
 	}
 	
-	std::vector<std::string> convertedFiles;
-	html::Converter conv;
-	convertedFiles = conv.cpptohtml(conv.initialChecks(cmdargs));
-
-	std::cout << "\n  Converted files:\n";
-
-	for (auto file : convertedFiles)
-		std::cout << "  " << file << "\n";
+	std::cout << "\n Converter package cannot exists without dependency package and dependency package cannot exists without parser.";
+	std::cout << "\n Executive shows the use of converter package in depth";
 
 	_getche();
 	return 0;

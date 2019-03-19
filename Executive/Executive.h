@@ -15,7 +15,7 @@
 * =================
 * Executive exe;											//To create an object of executive class
 * exe.runProject(Utilities::ProcessCmdLine& cmdargs);		//To execute runProject() function to show all the functionalities of the project
-* exe.Req3();												//To show Requirement 3 in the project
+* exe.Req4();												//To show Requirement 4 in the project
 *
 *Required Files :
 *-------------- -
@@ -28,7 +28,7 @@
 *
 *Maintenance History :
 *--------------------
-* - Created runProject and Req3 functions
+* - Created runProject and Req4 functions
 * ver 1.1 : 2 Feb 2019 
 * -Created Executive class
 * ver 1.0 : 26 Jan 2019
@@ -43,6 +43,6 @@ public:
 	Executive();
 	~Executive();
 	void runProject(Utilities::ProcessCmdLine& cmdargs);
-	void Req3();
+	void Req4();
 };
 
