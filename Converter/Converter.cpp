@@ -9,6 +9,7 @@
 #include "../DirExplorer-Naive/DirExplorerN.h"
 #include<regex>
 #include<conio.h>
+#include"../Keywords/Keywords.h"
 #include "../StringUtilities/StringUtilities.h"
 
 //Using namespace to avoid ambiguity with converter in StringUtilities.h
@@ -25,6 +26,7 @@ namespace html {
 	{
 	}
 
+	//Function to handle classes in handleSwitch function
 	void Converter::handleClass(size_t &i, vector<string> &line, size_t &lineNo) {
 		i = line[lineNo - 1].find("\t{");
 		if (i != line[lineNo - 1].npos) {
@@ -37,6 +39,7 @@ namespace html {
 		}
 	}
 
+	//Function to handle funtions in handleSwitch function
 	void Converter::handleFunction(size_t &i, vector<string> &line, size_t &lineNo) {
 		i = line[lineNo - 1].find("\t{");
 		if (i != line[lineNo - 1].npos) {
@@ -49,6 +52,7 @@ namespace html {
 		}
 	}
 
+	//Function to handle one line functions opening case in handleSwitch function
 	void Converter::handleOneLnFOpen(size_t &i, vector<string> &line, size_t &lineNo) {
 		i = line[lineNo - 1].find("\t{");
 		if (i != line[lineNo - 1].npos) {
@@ -62,6 +66,7 @@ namespace html {
 		}
 	}
 
+	//Function to handle one line functions closing case in handleSwitch function
 	void Converter::handleOneLnFClose(size_t &i, vector<string> &line, size_t &lineNo) {
 		i = line[lineNo - 1].find("\t}");
 		if (i != line[lineNo - 1].npos) {
@@ -75,6 +80,7 @@ namespace html {
 		}
 	}
 
+	//Function to handle switch case in addDiv function
 	void Converter::handleSwitch(size_t &i, vector<string> &line, std::map<std::size_t, DependencyT::TypeInfo>::iterator &iter2, size_t &lineNo) {
 		switch (iter2->second) {
 		case DependencyT::TypeInfo::clas:
@@ -182,10 +188,13 @@ namespace html {
 		webpageOutput.close();
 		return true;
 	}
+
+
 	
 	//Function to convert cpp files into html files
 	vector<string> Converter::cpptohtml(vector<string> files, map<string, vector<string>> depTable, std::map<std::string, std::map<std::size_t, DependencyT::TypeInfo>> &LT)
 	{
+		
 		vector<string> htmlFiles;
 		
 		ifstream in;
@@ -209,6 +218,10 @@ namespace html {
 					fileContent.push_back(line);
 				}
 
+				/*Keywords key;
+				map<string, int> keywords_ = key.returnMap();
+				fileContent = key.handleKeywords(fileContent);*/
+
 				addDiv(files[i], fileContent, LT);
 				handleComments(fileContent);
 				std::string name = Path::getName(files[i]);
@@ -218,7 +231,7 @@ namespace html {
 					for (size_t i = 0; i < iter->second.size(); i++)
 						dep.push_back(iter->second[i]);
 				}
-				std::string htmlFile = "../convertedPages/" + name + ".html";
+				std::string htmlFile = "../../../convertedPages/" + name + ".html";
 				std::string Path = Path::getFullFileSpec(htmlFile);
 				htmlFiles.push_back(Path);
 				

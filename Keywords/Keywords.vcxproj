@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{EB8EED7E-1B42-420F-AD5D-1A2EA81E43B6}</ProjectGuid>
-    <RootNamespace>Converter</RootNamespace>
+    <ProjectGuid>{A25601F9-C236-4CC1-8A9A-D56DCECC6390}</ProjectGuid>
+    <RootNamespace>Keywords</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -39,7 +39,7 @@
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
@@ -76,7 +76,6 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_MBCS;NOTEST_CONVERTER1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -85,7 +84,6 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;NOTEST_CONVERTER;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -117,24 +115,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Converter.h" />
+    <ClInclude Include="Keywords.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Converter.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CodeUtilities\CodeUtilities.vcxproj">
-      <Project>{d6e40902-7a6c-4af9-b69a-68e7b80b722c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\DirExplorer-Naive\DirExplorer-Naive.vcxproj">
-      <Project>{8006bb01-ee84-43ea-9c98-4216a68f2530}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\FileSystem\FileSystemDemo.vcxproj">
-      <Project>{ef4a3188-ca93-45a2-ab52-7548669e3aa8}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Keywords\Keywords.vcxproj">
-      <Project>{a25601f9-c236-4cc1-8a9a-d56dcecc6390}</Project>
-    </ProjectReference>
+    <ClCompile Include="Keywords.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

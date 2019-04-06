@@ -1,0 +1,138 @@
+﻿<Window x:Class="WpfApp3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfApp3"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" Unloaded="Window_Unloaded">
+    <Grid>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <!--Menu Bar Row - 0 -->
+        <Menu Grid.Row="0">
+            <MenuItem Header="File">
+                <MenuItem Header="Browse" Click="Button_btnbrowse"></MenuItem>
+                <Separator></Separator>
+                <MenuItem Header="Exit" Click="MenuItem_Click"></MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <!--Row 1-->
+        <Grid Grid.Row="1">
+            <TabControl x:Name="tabC">
+                <TabItem Header="Navigation" TabIndex="0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+                            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+                            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <!--ROW 0 -->
+                        <Label Grid.Row="0" Grid.Column="0">Path:</Label>
+                        <TextBlock IsEnabled="False" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" x:Name="CurrPath" 
+                                   x:FieldModifier="public" VerticalAlignment="Center" FontWeight="Medium" FontSize="12">
+                        </TextBlock>
+                        <Label Grid.Row="0" Grid.Column="4">Subdirs:</Label>
+                        <CheckBox Grid.Row="0" Grid.Column="5" x:Name="subdirs" IsChecked="True" Unchecked="Subdirs_unChecked" 
+                                  Checked="Subdirs_Checked" Margin="5"></CheckBox>
+                        <Button Grid.Row="0" Grid.Column="6" x:Name="btnbrowse" Content="Browse" Click="Button_btnbrowse" 
+                                Grid.ColumnSpan="2"></Button>
+
+                        <!---ROW 1-->
+                        <Separator Grid.Row="1" Grid.ColumnSpan="7"></Separator>
+
+                        <!-- ROW 2-->
+                        <Label Grid.Row="2" Grid.ColumnSpan="7">Select Source Folder:</Label>
+
+                        <!--ROW 3-->
+                        <Separator  Grid.Row="3" Grid.ColumnSpan="7"></Separator>
+
+                        <!--ROW 4-->
+                        <ListBox  Grid.Row="4" Grid.ColumnSpan="7" x:Name="Dirs" x:FieldModifier="public" FontWeight="Medium" 
+                                  FontSize="12" MouseDoubleClick="Dirs_MouseDoubleClick">
+                        </ListBox>
+
+                        <!--ROW 5-->
+                        <Label Grid.Row="5" Grid.Column="0">Patterns</Label>
+                        <TextBox Grid.Row="5" Grid.Column="1" x:Name="txtPatterns" x:FieldModifier="public" VerticalAlignment="Center" 
+                                 FontWeight="Medium" FontSize="12" Text="*.h *.cpp" KeyDown="TxtPatterns_KeyDown" Grid.ColumnSpan="3">
+                        </TextBox>
+                        <Label Grid.Row="5" Grid.Column="4">Regexs:</Label>
+                        <TextBox Grid.Row="5" Grid.Column ="5" Grid.ColumnSpan="2" x:Name="txtRegexs" x:FieldModifier="public" 
+                                 VerticalAlignment="Center" FontWeight="Medium" FontSize="12" Text="[A-B](.*)" 
+                                 KeyDown="TxtRegexs_KeyDown">
+                        </TextBox>
+
+                        <!--ROW 6-->
+                        <Button Grid.Row="6" Grid.ColumnSpan="7" Content="Publish" Click="Button_Click"></Button>
+                    </Grid>
+                </TabItem>
+
+                <TabItem Header="Display" TabIndex="1">
+                    <Grid>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                            <RowDefinition Height="*"></RowDefinition>
+                            <RowDefinition Height="AUTO"></RowDefinition>
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <!---ROW 0-->
+                        <Label Grid.Row="0" Grid.Column="0">Mode:</Label>
+                        <ComboBox x:Name="comboBox" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3">
+                            <ComboBoxItem x:Name="browse" Content="Open in Browser" IsSelected="True" Margin="3"></ComboBoxItem>
+                            <ComboBoxItem Content="Open Source Code" Margin="3"></ComboBoxItem>
+                        </ComboBox>
+
+                        <!--ROW 1 -->
+                        <ListBox Grid.Row="1" Grid.ColumnSpan="3" x:Name="convertedF" x:FieldModifier="public" FontWeight="Medium" FontSize="12" MouseDoubleClick="ConvertedF_MouseDoubleClick">
+                            <ListBox.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="Show Source code" Click="sourceButton"></MenuItem>
+                                    <MenuItem Header="Open in browser" Click="brwserButton"></MenuItem>
+                                </ContextMenu>
+                            </ListBox.ContextMenu>
+                        </ListBox>
+
+                        <!-- ROW 2-->
+                        <Button Grid.Row="2" Grid.ColumnSpan="3" x:Name="displayF" Content="Open All Converted Files" Click="DisplayF_Click"></Button>
+                    </Grid>
+                </TabItem>
+
+            </TabControl>
+
+        </Grid>
+
+        <!-- Status Bar Row - 2 -->
+        <StatusBar Grid.Row="2">
+            <TextBlock Text="Ready" Name="staturBar"></TextBlock>
+        </StatusBar>
+    </Grid>
+</Window>

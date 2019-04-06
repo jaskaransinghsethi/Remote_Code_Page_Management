@@ -1,0 +1,37 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
+#include "stdafx.h"
+
+using namespace System;
+using namespace System::Reflection;
+using namespace System::Runtime::CompilerServices;
+using namespace System::Runtime::InteropServices;
+using namespace System::Security::Permissions;
+
+[assembly:AssemblyTitleAttribute(L"Translator")];
+[assembly:AssemblyDescriptionAttribute(L"")];
+[assembly:AssemblyConfigurationAttribute(L"")];
+[assembly:AssemblyCompanyAttribute(L"")];
+[assembly:AssemblyProductAttribute(L"Translator")];
+[assembly:AssemblyCopyrightAttribute(L"Copyright (c)  2019")];
+[assembly:AssemblyTrademarkAttribute(L"")];
+[assembly:AssemblyCultureAttribute(L"")];
+
+[assembly:AssemblyVersionAttribute("1.0.*")];
+
+[assembly:ComVisible(false)];
+
+[assembly:CLSCompliantAttribute(true)];
+</pre>
+</body>
+</html>

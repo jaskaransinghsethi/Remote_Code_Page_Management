@@ -12,7 +12,7 @@
 <br><h3><a href="AbstrSynTree.h.html">AbstrSynTree.h</a>&nbsp;&nbsp;&nbsp;</h3><hr><pre>
 <div class="comments">/////////////////////////////////////////////////////////////////////</div>
 <div class="comments">//  AbstrSynTree.cpp - Represents an Abstract Syntax Tree          //</div>
-<div class="comments">//  ver 1.4                                                        //</div>
+<div class="comments">//  ver 1.5                                                        //</div>
 <div class="comments">//  Language:      Visual C++ 2015                                 //</div>
 <div class="comments">//  Platform:      Dell XPS 8900, Windows 10                       //</div>
 <div class="comments">//  Application:   Used to support parsing source code             //</div>
@@ -66,7 +66,10 @@ std::string ASTNode::show(bool details)
     temp &lt;&lt; "num statements: " &lt;&lt; statements_.size() &lt;&lt; ", ";
   }
   temp &lt;&lt; "line: " &lt;&lt; startLineCount_ &lt;&lt; ", ";
-  temp &lt;&lt; "size: " &lt;&lt; endLineCount_ - startLineCount_ + 1 &lt;&lt; ", ";
+  int size = static_cast&lt;int&gt;(endLineCount_ - startLineCount_ + 1);
+  if (size &lt;= 0)
+    size = 1;
+  temp &lt;&lt; "size: " &lt;&lt; size &lt;&lt; ", ";
   temp &lt;&lt; "cplx: " &lt;&lt; complexity_;
   <div class="comments">//temp &lt;&lt; "path: " &lt;&lt; path_;</div>
   temp &lt;&lt; ")";
@@ -163,7 +166,7 @@ ASTNode* AbstrSynTree::find(const ClassName& className)
 #include &lt;functional&gt;
 #include &lt;iostream&gt;
 
-using Utils = Utilities::StringHelper;
+using Utils = Utilities_P::StringHelper;
 
 int main()
 <div class="functions">{

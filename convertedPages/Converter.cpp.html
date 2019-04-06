@@ -21,6 +21,7 @@
 #include "../DirExplorer-Naive/DirExplorerN.h"
 #include&lt;regex&gt;
 #include&lt;conio.h&gt;
+#include"../Keywords/Keywords.h"
 #include "../StringUtilities/StringUtilities.h"
 
 <div class="comments">//Using namespace to avoid ambiguity with converter in StringUtilities.h</div>
@@ -194,10 +195,13 @@ namespace html {
 		webpageOutput.close();
 		return true;
 	}</div>
+
+
 	
 	<div class="comments">//Function to convert cpp files into html files</div>
 	vector&lt;string&gt; Converter::cpptohtml(vector&lt;string&gt; files, map&lt;string, vector&lt;string&gt;&gt; depTable, std::map&lt;std::string, std::map&lt;std::size_t, DependencyT::TypeInfo&gt;&gt; &LT)
 <div class="functions">	{
+		
 		vector&lt;string&gt; htmlFiles;
 		
 		ifstream in;
@@ -221,6 +225,10 @@ namespace html {
 					fileContent.push_back(line);
 				}
 
+				<div class="comments">/*Keywords key;
+				map&lt;string, int&gt; keywords_ = key.returnMap();
+				fileContent = key.handleKeywords(fileContent);*/</div>
+
 				addDiv(files[i], fileContent, LT);
 				handleComments(fileContent);
 				std::string name = Path::getName(files[i]);
@@ -230,7 +238,7 @@ namespace html {
 					for (size_t i = 0; i &lt; iter-&gt;second.size(); i++)
 						dep.push_back(iter-&gt;second[i]);
 				}
-				std::string htmlFile = "../convertedPages/" + name + ".html";
+				std::string htmlFile = "../../../convertedPages/" + name + ".html";
 				std::string Path = Path::getFullFileSpec(htmlFile);
 				htmlFiles.push_back(Path);
 				
