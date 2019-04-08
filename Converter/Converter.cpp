@@ -1,6 +1,45 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ///////////////////////////////////////////////////////////////////////////
 // Converter.cpp - class used convert a cpp file to html file           //   
-// ver 1.0                                                              //
+// ver 1.3                                                              //
 // Jaskaran Singh, CSE687 - Object Oriented Design, Spring 2018         //
 //////////////////////////////////////////////////////////////////////////
 
@@ -218,10 +257,6 @@ namespace html {
 					fileContent.push_back(line);
 				}
 
-				/*Keywords key;
-				map<string, int> keywords_ = key.returnMap();
-				fileContent = key.handleKeywords(fileContent);*/
-
 				addDiv(files[i], fileContent, LT);
 				handleComments(fileContent);
 				std::string name = Path::getName(files[i]);
@@ -285,12 +320,8 @@ namespace html {
 					CppToHtmlFiles.push_back(file);
 			}
 			cout << "\nList of files after applying regex"<<regeX;
-			//pcl.showRegexes();
+
 			displayFiles(CppToHtmlFiles);
-			/*cout << "\n Files to be processed:-" << CppToHtmlFiles.size();
-			cout << "\n Following file will be converted into HTML file";
-			for (auto file : CppToHtmlFiles)
-				cout << "\n " << file;*/
 		}
 
 		

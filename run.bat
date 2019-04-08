@@ -1,5 +1,3 @@
-cd "..\OOD_PROJECT2\Debug\
+cd "..\OOD_PROJECT2\WpfApp3\bin\Debug
 
-start Executive.exe .. /s *h *.cpp [H](.*)
-
-start Executive.exe .. /s *.h *.cpp [B-C](.*)
+start WpfApp3.exe

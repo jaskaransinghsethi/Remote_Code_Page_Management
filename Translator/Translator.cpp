@@ -16,17 +16,17 @@
 //Default Constructor
 Translator::Translator()
 {
-	Console::Write("\n  Translator created");
+	//Console::Write("\n  Translator created");
 	ObjectFactory factory;
 	client = factory.createClient();
-	Console::Write("\n  Translator instantiated Publisher as IPublisher*");
+	//Console::Write("\n  Translator instantiated Publisher as IPublisher*");
 }
 
 //Default destructor
 Translator::~Translator()
 {
 	delete client;
-	Console::Write("\n  Translator destroyed\n\n");
+	//Console::Write("\n  Translator destroyed\n\n");
 }
 
 //A function to start publisher in c++ native code. Argv is List<String> from WPF application

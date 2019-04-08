@@ -7,14 +7,16 @@
 /*
  * Package Operations:
  * -------------------
- *Converter provides a class, of the same name, that has two functions, first,
+ *Converter provides a class, of the same name, that has 3 main functions, first,
  *cpptohtml which takes a vector of string of files to be converted into html files
  *and returns a vector of string of converted html files.
  *Second, initialChecks function which takes the object of ProcessCmdLine class
  *and which call DirectorExlorer-N to returns all the directories and subdirectories
  *within directories and files with the matching pattern. initialChecks returns the vector
  *of string of files which are to be converted to html files.
- * 
+ *Third, addDiv tags which add div tags to the appropriate place, which uses
+ *helper functions to achieve this
+ *
  * Public Interface:
  * =================
  * Converter conv;														//To create object of converter class

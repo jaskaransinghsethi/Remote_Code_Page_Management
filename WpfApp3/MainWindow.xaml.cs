@@ -21,6 +21,9 @@
  * 
  * Maintenance History:
  * --------------------
+ * -April 8th, 2019
+ *  Implemented threading to improve performance issues
+ *  
  * -April 5th, 2019
  *  first release
  */
@@ -32,6 +35,7 @@ using System.Windows.Input;
 using System.IO;
 using System.Diagnostics;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WpfApp3
 {
@@ -58,13 +62,15 @@ namespace WpfApp3
         }
 
         //A function to load files when window is loaded
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        async private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Thread worker;
-            worker = new Thread(()=> {
-                Dispatcher.Invoke(() => {
-                    path = Directory.GetCurrentDirectory();
-                    path = getAncestorPath(3, path);
+            worker = new Thread(() =>
+            {
+                path = Directory.GetCurrentDirectory();
+                path = getAncestorPath(3, path);
+                Dispatcher.Invoke(() =>
+                {
                     regex = txtRegexs.Text;
                     patterns = txtPatterns.Text;
                     if (subdirs.IsChecked.Equals(true))
@@ -75,6 +81,45 @@ namespace WpfApp3
                 });
             });
             worker.Start();
+            await Task.Delay(1000);
+            ATU();
+        }
+
+        //A function to demonstrate all the requirements are fullfilled
+        private void ATU()
+        {
+            Thread thread = new Thread(() =>
+            {
+                Console.WriteLine("=======================================Demonstrating Requirements=======================================");
+                Console.WriteLine("Req1: This project uses Microsoft Visual Studio 15.9 2017 Enterprise Endition");
+                Console.WriteLine("      This project is based on C++ static library, C++ CLR/CLI DLLs & WPF Console Application");
+                Console.WriteLine("Req2: This is project used WPF GUI and C# to implement all the functionalities of Client");
+                Console.WriteLine("Req3: Interface - IPublisher is defined for Publisher that declares methods to access all the publisher" +
+                    " facilities and an Object Factory which returns a pointer to Publisher of IPublisher type");
+                Console.WriteLine("      Path to IPublisher.h:  " + System.IO.Path.GetFullPath("../../../Publisher/IPublisher.h"));
+                Console.WriteLine("      Path to Publisher.h & Object Factory:  " + System.IO.Path.GetFullPath("../../../Publisher/Publisher.h"));
+                Console.WriteLine("Req4: Publisher and IPublisher are built as DLLs, IPublisher exposes the Publisher methods to the C++ CLR/CLI translator");
+                Console.WriteLine("Req5: The C++ CLR/CLI translator is created to support interaction of managed code with native code");
+                Console.WriteLine("      Translator is built as Dynamic link library to support this interaction");
+                Console.WriteLine("      Path to Translator.h:  " + System.IO.Path.GetFullPath("../../../Translator/Translator.h"));
+                Console.WriteLine("Req6: The WPF GUI is implemented with two views. Navigation view for selection of path, giving pattern and regex");
+                Console.WriteLine("      Display view shows all the converted files. It supports two mode. Open files in browser or Open files in new window");
+                Console.WriteLine("Req7: This is Automated Test Suite");
+                Console.WriteLine("=======================================Demonstrating Requirements=======================================");
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        Button_Click(this, null);
+                    });
+                }
+                catch(SystemException ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            });
+
+            thread.Start();
         }
 
         //A function to get ancestor of all folder at a given path
@@ -84,7 +129,7 @@ namespace WpfApp3
                 path = Directory.GetParent(path).FullName;
             return path;
         }
-        
+
         //A function to load file and folder into the listbox
         private void LoadNavTab(string path)
         {
@@ -133,12 +178,12 @@ namespace WpfApp3
                     path = System.IO.Path.Combine(path, selectedDir);
                 LoadNavTab(path);
             }
-            else if(File.Exists(temp))
+            else if (File.Exists(temp))
             {
                 string fileName = Dirs.SelectedValue as string;
                 try
                 {
-                    string fpath = System.IO.Path.Combine(path,fileName);
+                    string fpath = System.IO.Path.Combine(path, fileName);
                     string contents = File.ReadAllText(fpath);
                     SelectionWindow popup = new SelectionWindow();
                     popup.codeView.Text = contents;
@@ -157,73 +202,145 @@ namespace WpfApp3
         //A function to handle open all converted files in the Display view
         private void DisplayF_Click(object sender, RoutedEventArgs e)
         {
-            if (browse.IsSelected)
+            bool isSelected = browse.IsSelected;
+            try
             {
-                foreach (string file in convertedFiles)
+                Thread worker;
+                worker = new Thread(() =>
                 {
-                    staturBar.Text = "Busy";
+                    if (isSelected)
+                    {
+                        openInBrowser();
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            openInSelW();
+                        });
+                    }
                     try
                     {
-                        var process = new Process();
-                        process.StartInfo.FileName = "firefox";
-                        process.StartInfo.Arguments = file;
-                        process.Start();
-                        process.WaitForExit();
+                        Dispatcher.Invoke(() =>
+                        {
+                            staturBar.Text = "Ready";
+                        });
                     }
-                    catch(Exception ex)
+                    catch (SystemException ex)
                     {
-                        string msg = ex.Message;
-                        SelectionWindow popup = new SelectionWindow();
-                        popup.codeView.Text = msg;
-                        popup.Show();
+                        Console.WriteLine(ex.Message);
                     }
-                }
-                staturBar.Text = "Ready";
+                });
+                worker.Start();
             }
-            else
+            catch (Exception ex)
             {
-                foreach (string file in convertedFiles) {
+                Console.WriteLine(ex.Message);
+            }
+        }
+
+        //A function to open converted file in the browser
+        private void openInBrowser()
+        {
+            foreach (string file in convertedFiles)
+            {
+                try
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        staturBar.Text = "Busy - Open Converted Files in Firefox";
+                    });
+                    var process = new Process();
+                    process.StartInfo.FileName = "firefox";
+                    process.StartInfo.Arguments = file;
+                    process.Start();
+                    process.WaitForExit();
+                }
+                catch (SystemException ex)
+                {
+                    string msg = ex.Message;
                     try
                     {
-                        string contents = File.ReadAllText(file);
-                        SelectionWindow popup = new SelectionWindow();
-                        popup.codeView.Text = contents;
-                        popup.Show();
+                        Dispatcher.Invoke(() =>
+                        {
+                            SelectionWindow popup = new SelectionWindow();
+                            popup.codeView.Text = msg;
+                            popup.Show();
+                        });
                     }
-                    catch (Exception ex)
+                    catch (Exception s)
                     {
-                        string msg = ex.Message;
-                        SelectionWindow popup = new SelectionWindow();
-                        popup.codeView.Text = msg;
-                        popup.Show();
+                        Console.WriteLine(s.Message);
                     }
                 }
             }
         }
 
+        //A function to open converted file in selection window
+        private void openInSelW()
+        {
+            foreach (string file in convertedFiles)
+            {
+                try
+                {
+                    SelectionWindow popup = new SelectionWindow();
+                    staturBar.Text = "Busy - Open Converted Files in Selection Window";
+                    string contents = File.ReadAllText(file);
+                    popup.codeView.Text = contents;
+                    popup.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    string msg = ex.Message;
+                    SelectionWindow popup = new SelectionWindow();
+                    popup.codeView.Text = msg;
+                    popup.Show();
+                }
+            }
+        }
+
         //A function to handle publish button in Navigation view
-        private void Button_Click(object sender, RoutedEventArgs e)
+        async private void Button_Click(object sender, RoutedEventArgs e)
         {
             staturBar.Text = "Converting";
+            await Task.Delay(500);
             Thread worker;
             worker = new Thread(() =>
             {
-                Dispatcher.Invoke(() =>
+                trans = new Translator();
+                List<String> args = new List<string>();
+                String pPath = System.IO.Path.GetFullPath("../../MainWindow.xaml.cs");
+                args.Add(pPath);
+                args.Add(path);
+                args.Add(options);
+                List<String> temp = new List<string>();
+                args.AddRange(patterns.Split(' '));
+                args.Add(regex);
+                convertedFiles = trans.startProject(args);
+                Dispatcher.Invoke(async () =>
                 {
-                    trans = new Translator();
-                    List<String> args = new List<string>();
-                    String pPath = System.IO.Path.GetFullPath("../../MainWindow.xaml.cs");
-                    args.Add(pPath);
-                    args.Add(path);
-                    args.Add(options);
-                    List<String> temp = new List<string>();
-                    args.AddRange(patterns.Split(' '));
-                    args.Add(regex);
-                    convertedFiles = trans.startProject(args);
                     displayCFiles();
-                    MessageBox.Show("All files have been published");
-                    tabC.SelectedIndex = 1;
-                    staturBar.Text = "Ready";
+                    if (e != null)
+                    {
+                        string message = "All files have been published successfully";
+                        string title = "Conversion Complete";
+                        System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
+                        System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
+                        if (result == System.Windows.Forms.DialogResult.OK)
+                        {
+                            tabC.SelectedIndex = 1;
+                        }
+                        staturBar.Text = "Ready";
+                    }
+                    else
+                    {
+                        await Task.Delay(1000);
+                        staturBar.Text = "All files have been published successfully";
+                        await Task.Delay(1000);
+                        tabC.SelectedIndex = 1;
+                        await Task.Delay(1000);
+                        DisplayF_Click(this, null);
+                    }
                 });
             });
             worker.Start();
@@ -232,18 +349,46 @@ namespace WpfApp3
         //A function which is invoked when we change regex and press enter
         private void TxtRegexs_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.Enter)
+            if (e.Key == Key.Enter)
             {
+                if (txtRegexs.Text == "")
+                {
+                    staturBar.Text = "Regex Empty";
+                    string message = "Please input valid Regex";
+                    string title = "Regex Null Exception";
+                    System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
+                    System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        tabC.SelectedIndex = 0;
+                    }
+                    return;
+                }
                 regex = txtRegexs.Text;
+                staturBar.Text = "Ready";
             }
         }
         
         //A function which is invoked when we change patterns and press enter
         private void TxtPatterns_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter)
+            if(e.Key == Key.Enter)
             {
+                if (txtRegexs.Text == "")
+                {
+                    staturBar.Text = "Patterns Empty";
+                    string message = "Please input valid Pattern";
+                    string title = "Patterns Null Exception";
+                    System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
+                    System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
+                    if (result == System.Windows.Forms.DialogResult.OK)
+                    {
+                        tabC.SelectedIndex = 0;
+                    }
+                    return;
+                }
                 patterns = txtPatterns.Text;
+                staturBar.Text = "Ready";
             }
         }
         
@@ -272,21 +417,24 @@ namespace WpfApp3
             {
                 try
                 {
-                    string file = convertedF.SelectedItem as string;
-                    string path = System.IO.Path.Combine("../../../convertedPages", file);
-                    path = System.IO.Path.GetFullPath(path);
-                    var process = new Process();
-                    process.StartInfo.FileName = "firefox";
-                    process.StartInfo.Arguments = path;
-                    process.Start();
-                    process.WaitForExit();
+                    Thread worker = new Thread(() =>
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            string file = convertedF.SelectedItem as string;
+                            string path = System.IO.Path.Combine("../../../convertedPages", file);
+                            path = System.IO.Path.GetFullPath(path);
+                            var process = new Process();
+                            process.StartInfo.FileName = "firefox";
+                            process.StartInfo.Arguments = path;
+                            process.Start();
+                        });
+                    });
+                    worker.Start();
                 }
                 catch (Exception ex)
                 {
-                    string msg = ex.Message;
-                    SelectionWindow popup = new SelectionWindow();
-                    popup.codeView.Text = msg;
-                    popup.Show();
+                    Console.WriteLine(ex.Message);
                 }
             }
             else
@@ -359,21 +507,24 @@ namespace WpfApp3
         {
             try
             {
-                string file = convertedF.SelectedItem as string;
-                string path = System.IO.Path.Combine("../../../convertedPages", file);
-                path = System.IO.Path.GetFullPath(path);
-                var process = new Process();
-                process.StartInfo.FileName = "firefox";
-                process.StartInfo.Arguments = path;
-                process.Start();
-                process.WaitForExit();
+                Thread worker = new Thread(() =>
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        string file = convertedF.SelectedItem as string;
+                        string path = System.IO.Path.Combine("../../../convertedPages", file);
+                        path = System.IO.Path.GetFullPath(path);
+                        var process = new Process();
+                        process.StartInfo.FileName = "firefox";
+                        process.StartInfo.Arguments = path;
+                        process.Start();
+                    });
+                });
+                worker.Start();
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
-                SelectionWindow popup = new SelectionWindow();
-                popup.codeView.Text = msg;
-                popup.Show();
+                Console.WriteLine(ex.Message);
             }
         }
 

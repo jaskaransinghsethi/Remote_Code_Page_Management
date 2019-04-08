@@ -137,8 +137,15 @@ inline bool publisher::processCmdLineArg(int argc, char** argv) {
 
 	preface("Command Line: ");
 	cmdargs.showCmdLine();
+	preface("Path: ");
+	cmdargs.showPath();
+	preface("Options: ");
+	cmdargs.showOptions();
+	preface("Patterns: ");
+	cmdargs.showPatterns();
+	preface("Regex: ");
 	cmdargs.showRegexes();
-	Utilities::putline(0);
+	Utilities::putline();
 
 	if (cmdargs.parseError())
 	{

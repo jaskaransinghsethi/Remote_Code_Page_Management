@@ -11,34 +11,15 @@
 /*
 *  Package Description:
 * ======================
-*  This package defines a C++ class that uses <thread>, Cpp11-BlockingQueue
-*  which uses <condition variable> and <mutex>. These concurrency classes
-*  are not supported in CLR mode and cannot compile under /CLR flag.
-*  Therefore, the implementation of the class was moved to the .cpp file
-*  leaving the .h file free of any CLR-incompatible types. However, we
-*  still need to use the C++ class in C++/CLI environment and under /CLR
-*  code. To do so, we created an interface (ICppClass shown below) that
-*  declares the methods we want the C++/CLI Shim to use. The concept of
-*  inheritance allows the use of an interface pointer (ICppClass*) to
-*  point into any derived (or implementation) class objects (CppClass).
-*  Therefore, we declared an object factory that returned ICppClass*
-*  and implemented the function in the .cpp file to return CppClass*.
-*  This way, the C++/CLI Shim will be able to use CppClass through
-*  its interface without any knowledge about it and hence CppClass'
-*  CLR incompatible types are of no issue anymore.
-*
-*  The ObjectFactory (shown below) can be used without the 'extern "C"'
-*  marker but it is not recommended to do so. The marker will prevent
-*  the compiler from doing any namemangeling on the function allowing
-*  the use of PInvoke if needed. For this application it doesn't make
-*  a difference so you can use either.
-*
+* IPublisher interface is implemented by the Publisher. It is created to hide the
+* the details of Publisher from C++ CLR, Translator. It supports the interaction of WPF
+* GUI with native code.
 *
 *  Public Interface:
 * ===================
-*  ObjectFactory factory;
-*  IPublisher* instance = factory.createClient();
-*  instance->startProject(argc, argv);
+*  ObjectFactory factory;								//Create an instance of object factory
+*  IPublisher* instance = factory.createClient();		//Create an instance of Publisher and return a pointer of IPublisher type
+*  instance->startProject(argc, argv);					//A function to execute all the functionalities of the Publisher
 *
 *  Required Files:
 * =================

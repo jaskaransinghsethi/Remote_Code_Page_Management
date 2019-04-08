@@ -1,8 +1,8 @@
 
                                       CodeAnalysis - Version 1.8
     ==============================================================================================
-     Tue Mar  5 22:24:29 2019
-     Path: "C:\OOD_PROJECT2"
+     Mon Apr  8 17:20:51 2019
+     Path: "C:\Users\Jaskaran\source\repos\OOD_PROJECT2"
      Args: *.h, *.cpp, *.cs, /v, /m, /r, /f, /p
                                                                                
            Code Metrics - Start Line, Size (lines/code), and Complexity (number of scopes)
@@ -10,18 +10,18 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-                             namespace                   Global Namespace       1       1    1571
+                             namespace                   Global Namespace       1       1    1704
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-            AbstrSynTree.h   namespace                       CodeAnalysis      63     112      13
+            AbstrSynTree.h   namespace                       CodeAnalysis      63     112      29
             AbstrSynTree.h      struct                    DeclarationNode      75       7       1
               public data: Lexer :: ITokenCollection * pTc = nullptr ; 
               public data: Access access_ ; 
               public data: DeclType declType_ ; 
               public data: std :: string package_ ; 
               public data: size_t line_ ; 
-            AbstrSynTree.h      struct                            ASTNode      84      22       1
+            AbstrSynTree.h      struct                            ASTNode      84      22       7
               public data: Type type_ ; 
               public data: Type parentType_ ; 
               public data: Name name_ ; 
@@ -33,37 +33,12 @@
               public data: std :: vector < ASTNode * > children_ ; 
               public data: std :: vector < DeclarationNode > decl_ ; 
               public data: std :: vector < Lexer :: ITokenCollection * > statements_ ; 
-            AbstrSynTree.h       class                       AbstrSynTree     108      17       1
+            AbstrSynTree.h       class                       AbstrSynTree     108      17      11
             AbstrSynTree.h    function                            ASTWalk     129      12       2
             AbstrSynTree.h    function                    ASTWalkNoIndent     145       9       2
             AbstrSynTree.h    function                     complexityWalk     157      10       2
             AbstrSynTree.h    function                     complexityEval     170       4       1
             AbstrSynTree.h      struct                             foobar     176       3       1
-            AbstrSynTree.h   namespace                       CodeAnalysis      61     112      45
-            AbstrSynTree.h      struct                    DeclarationNode      73       7       1
-              public data: Lexer :: ITokenCollection * pTc = nullptr ; 
-              public data: Access access_ ; 
-              public data: DeclType declType_ ; 
-              public data: std :: string package_ ; 
-              public data: size_t line_ ; 
-            AbstrSynTree.h      struct                            ASTNode      82      22      13
-              public data: Type type_ ; 
-              public data: Type parentType_ ; 
-              public data: Name name_ ; 
-              public data: Package package_ ; 
-              public data: Path path_ ; 
-              public data: size_t startLineCount_ ; 
-              public data: size_t endLineCount_ ; 
-              public data: size_t complexity_ ; 
-              public data: std :: vector < ASTNode * > children_ ; 
-              public data: std :: vector < DeclarationNode > decl_ ; 
-              public data: std :: vector < Lexer :: ITokenCollection * > statements_ ; 
-            AbstrSynTree.h       class                       AbstrSynTree     106      17      21
-            AbstrSynTree.h    function                            ASTWalk     127      12       2
-            AbstrSynTree.h    function                    ASTWalkNoIndent     143       9       2
-            AbstrSynTree.h    function                     complexityWalk     155      10       2
-            AbstrSynTree.h    function                     complexityEval     168       4       1
-            AbstrSynTree.h      struct                             foobar     174       3       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -71,10 +46,6 @@
           AbstrSynTree.cpp    function                            ASTNode      23       2       1
           AbstrSynTree.cpp    function                           ~ASTNode      29      10       2
           AbstrSynTree.cpp    function                               show      42      24       2
-          AbstrSynTree.cpp    function                            ASTNode      18       2       1
-          AbstrSynTree.cpp    function                            ASTNode      23       2       1
-          AbstrSynTree.cpp    function                           ~ASTNode      29      10       2
-          AbstrSynTree.cpp    function                               show      42      21       2
           AbstrSynTree.cpp    function                       AbstrSynTree      72       6       1
           AbstrSynTree.cpp    function                      ~AbstrSynTree      85       3       1
           AbstrSynTree.cpp    function                               root      91       3       1
@@ -82,17 +53,8 @@
           AbstrSynTree.cpp    function                                add     108      14       3
           AbstrSynTree.cpp    function                                pop     128       5       1
           AbstrSynTree.cpp    function                               find     138       8       2
-          AbstrSynTree.cpp    function                       AbstrSynTree      69       6       1
-          AbstrSynTree.cpp    function                      ~AbstrSynTree      82       3       1
-          AbstrSynTree.cpp    function                               root      88       3       1
-          AbstrSynTree.cpp    function                            typeMap      96       3       1
-          AbstrSynTree.cpp    function                                add     105      14       3
-          AbstrSynTree.cpp    function                                pop     125       5       1
-          AbstrSynTree.cpp    function                               find     135       8       2
           AbstrSynTree.cpp    function                               main     160      36       2
           AbstrSynTree.cpp    function                               void     179       2       1
-          AbstrSynTree.cpp    function                               main     157      36       2
-          AbstrSynTree.cpp    function                               void     176       2       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -198,6 +160,25 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
+                  App.g.cs   namespace                            WpfApp3      35      35       4
+                  App.g.cs       class                                App      41      29       3
+                  App.g.cs    function       DebuggerNonUserCodeAttribute      48       8       1
+                  App.g.cs    function                 STAThreadAttribute      63       5       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                App.g.i.cs   namespace                            WpfApp3      35      35       4
+                App.g.i.cs       class                                App      41      29       3
+                App.g.i.cs    function       DebuggerNonUserCodeAttribute      48       8       1
+                App.g.i.cs    function                 STAThreadAttribute      63       5       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+               App.xaml.cs   namespace                            WpfApp3      10       8       2
+               App.xaml.cs       class                                App      15       3       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
            CodeUtilities.h   namespace                          Utilities      60     372      58
            CodeUtilities.h    function                            preface      66       3       1
            CodeUtilities.h    function                       defaultUsage      71      10       1
@@ -296,28 +277,28 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-               Converter.h   namespace                               html      60      23       2
-               Converter.h       class                          Converter      65      17       1
+               Converter.h   namespace                               html      62      23       2
+               Converter.h       class                          Converter      67      17       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-             Converter.cpp    function                          Converter      20       2       1
-             Converter.cpp    function                         ~Converter      25       2       1
-             Converter.cpp    function                        handleClass      28      11       3
-             Converter.cpp    function                     handleFunction      40      11       3
-             Converter.cpp    function                   handleOneLnFOpen      52      12       4
-             Converter.cpp    function                  handleOneLnFClose      65      12       4
-             Converter.cpp    function                       handleSwitch      78      40       8
-             Converter.cpp    function                             addDiv     120      13       3
-             Converter.cpp    function                         addPreTags     135      14       1
-             Converter.cpp    function                          writeHTML     151      34       5
-             Converter.cpp    function                          cpptohtml     188      49       7
-             Converter.cpp    function                       displayFiles     239       5       1
-             Converter.cpp    function                      initialChecks     247      40       5
-             Converter.cpp    function                     handleComments     290      23       6
-             Converter.cpp   namespace                               html      15     299       1
-             Converter.cpp    function                        customUsage     322      13       1
-             Converter.cpp    function                               main     336      24       2
+             Converter.cpp    function                          Converter      60       2       1
+             Converter.cpp    function                         ~Converter      65       2       1
+             Converter.cpp    function                        handleClass      69      11       3
+             Converter.cpp    function                     handleFunction      82      11       3
+             Converter.cpp    function                   handleOneLnFOpen      95      12       4
+             Converter.cpp    function                  handleOneLnFClose     109      12       4
+             Converter.cpp    function                       handleSwitch     123      40       8
+             Converter.cpp    function                             addDiv     165      13       3
+             Converter.cpp    function                         addPreTags     180      14       1
+             Converter.cpp    function                          writeHTML     196      34       5
+             Converter.cpp    function                          cpptohtml     235      50       7
+             Converter.cpp    function                       displayFiles     287       5       1
+             Converter.cpp    function                      initialChecks     295      36       5
+             Converter.cpp    function                     handleComments     334      23       6
+             Converter.cpp   namespace                               html      55     303       1
+             Converter.cpp    function                        customUsage     366      13       1
+             Converter.cpp    function                               main     380      24       2
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -350,8 +331,8 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-             DependencyT.h       class                        DependencyT      55      16      31
-             DependencyT.h    function                           returnLT      59       2       1
+             DependencyT.h       class                        DependencyT      59      16      31
+             DependencyT.h    function                           returnLT      63       2       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -360,11 +341,11 @@
            DependencyT.cpp    function                       findTypeInfo      26      17       1
            DependencyT.cpp    function                           createLT      45      35       7
            DependencyT.cpp    function                         createDepT      82      24       4
-           DependencyT.cpp    function                            iChecks     107      16       4
-           DependencyT.cpp    function                          runParser     125      41       5
-           DependencyT.cpp    function                         callParser     168      11       1
-           DependencyT.cpp    function                 manipulateDepTable     181      15       4
-           DependencyT.cpp    function                               main     201      30       6
+           DependencyT.cpp    function                            iChecks     108      18       4
+           DependencyT.cpp    function                          runParser     128      41       5
+           DependencyT.cpp    function                         callParser     171      11       1
+           DependencyT.cpp    function                 manipulateDepTable     184      15       4
+           DependencyT.cpp    function                               main     204      30       6
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -417,16 +398,7 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
-               Executive.h       class                          Executive      41       7       7
-
-                 file name        type                               name    line    size    cplx
-    -----------------------  ----------  ---------------------------------  ------  ------  ------
-             Executive.cpp    function                          Executive      23       2       1
-             Executive.cpp    function                         ~Executive      28       2       1
-             Executive.cpp    function                         runProject      32      37       3
-             Executive.cpp    function                               Req4      72      27       1
-             Executive.cpp    function                        customUsage     102      13       1
-             Executive.cpp    function                               main     119      50       5
+             Executive.cpp    function                               main      20       6       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -707,8 +679,27 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
+              IPublisher.h       class                         Ipublisher      47       5       2
+              IPublisher.h    function                        ~Ipublisher      49       1       1
+              IPublisher.h      struct                      ObjectFactory      56       3       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
         ITokenCollection.h   namespace                              Lexer      14      42       2
         ITokenCollection.h      struct                   ITokenCollection      21      34       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+                Keywords.h       class                           Keywords       6      10      15
+              public data: std :: vector < std :: string > handleKeywords ( std :: vector < std :: string > fileContent ) ; 
+                Keywords.h    function                          returnMap      13       2       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+              Keywords.cpp    function                           Keywords       9       2       1
+              Keywords.cpp    function                          ~Keywords      14       2       1
+              Keywords.cpp    function                          createMap      18      15       4
+              Keywords.cpp    function                     handleKeywords      34      29       7
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -745,6 +736,49 @@
                 Logger.cpp      struct                           Cosmetic     137       3       2
                 Logger.cpp    function                          ~Cosmetic     137       2       1
                 Logger.cpp    function                               main     146      45       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+           MainWindow.g.cs   namespace                            WpfApp3      35     292       6
+           MainWindow.g.cs       class                         MainWindow      41     286       5
+              public data: private bool _contentLoaded ; 
+           MainWindow.g.cs    function       DebuggerNonUserCodeAttribute     161      13       2
+           MainWindow.g.cs    function       DebuggerNonUserCodeAttribute     181     144       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+         MainWindow.g.i.cs   namespace                            WpfApp3      35     292       6
+         MainWindow.g.i.cs       class                         MainWindow      41     286       5
+              public data: private bool _contentLoaded ; 
+         MainWindow.g.i.cs    function       DebuggerNonUserCodeAttribute     161      13       2
+         MainWindow.g.i.cs    function       DebuggerNonUserCodeAttribute     181     144       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+        MainWindow.xaml.cs   namespace                            WpfApp3      41     497      86
+        MainWindow.xaml.cs       class                         MainWindow      47     491      85
+        MainWindow.xaml.cs    function                         MainWindow      60       3       1
+        MainWindow.xaml.cs    function                      Window_Loaded      66      21       3
+        MainWindow.xaml.cs    function                                ATU      90      34       5
+        MainWindow.xaml.cs    function                    getAncestorPath     127       5       1
+        MainWindow.xaml.cs    function                         LoadNavTab     135      18       3
+        MainWindow.xaml.cs    function                      displayCFiles     156       8       2
+        MainWindow.xaml.cs    function              Dirs_MouseDoubleClick     167      34       5
+        MainWindow.xaml.cs    function                     DisplayF_Click     204      37      10
+        MainWindow.xaml.cs    function                      openInBrowser     244      34       8
+        MainWindow.xaml.cs    function                         openInSelW     281      20       4
+        MainWindow.xaml.cs    function                       Button_Click     304      44       6
+        MainWindow.xaml.cs    function                  TxtRegexs_KeyDown     351      20       4
+        MainWindow.xaml.cs    function                TxtPatterns_KeyDown     374      20       4
+        MainWindow.xaml.cs    function                  Subdirs_unChecked     397       6       1
+        MainWindow.xaml.cs    function                    Subdirs_Checked     406       6       1
+        MainWindow.xaml.cs    function        ConvertedF_MouseDoubleClick     415      28       6
+        MainWindow.xaml.cs    function                     openSourceCode     446      19       3
+        MainWindow.xaml.cs    function                   Button_btnbrowse     468       8       2
+        MainWindow.xaml.cs    function                     MenuItem_Click     479       3       1
+        MainWindow.xaml.cs    function                       sourceButton     485      19       3
+        MainWindow.xaml.cs    function                       brwserButton     507      23       5
+        MainWindow.xaml.cs    function                    Window_Unloaded     533       3       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -811,6 +845,25 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
+               Publisher.h    function                       createClient     162       2       1
+               Publisher.h       class                          publisher      56       8      10
+               Publisher.h    function                          publisher      66       3       1
+               Publisher.h    function                         ~publisher      71       3       1
+               Publisher.h    function                       startProject      77       9       2
+               Publisher.h    function                  getConvertedFiles      90      26       3
+               Publisher.h    function                  processCmdLineArg     134      26       2
+               Publisher.h    function                        customUsage     119      13       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+     Resources.Designer.cs   namespace                            WpfApp3      12      60       9
+     Resources.Designer.cs       class                          Resources      26      46       8
+     Resources.Designer.cs    function           SuppressMessageAttribute      34       2       1
+     Resources.Designer.cs    function           EditorBrowsableAttribute      42      11       3
+     Resources.Designer.cs    function           EditorBrowsableAttribute      60      10       3
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
               ScopeStack.h   namespace                       CodeAnalysis      59     137      21
               ScopeStack.h       class                         ScopeStack      61      19      12
               ScopeStack.h    function                         ScopeStack      81       2       1
@@ -835,6 +888,27 @@
               public data: std :: string path_ ; 
             ScopeStack.cpp    function                               show      32      13       1
             ScopeStack.cpp    function                               main      49      75       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+      SelectionWindow.g.cs   namespace                            WpfApp3      35      54       6
+      SelectionWindow.g.cs       class                    SelectionWindow      41      48       5
+      SelectionWindow.g.cs    function       DebuggerNonUserCodeAttribute      58      13       2
+      SelectionWindow.g.cs    function       DebuggerNonUserCodeAttribute      78       9       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+    SelectionWindow.g.i.cs   namespace                            WpfApp3      35      54       6
+    SelectionWindow.g.i.cs       class                    SelectionWindow      41      48       5
+    SelectionWindow.g.i.cs    function       DebuggerNonUserCodeAttribute      58      13       2
+    SelectionWindow.g.i.cs    function       DebuggerNonUserCodeAttribute      78       9       2
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+   SelectionWindow.xaml.cs   namespace                            WpfApp3      26      14       3
+   SelectionWindow.xaml.cs       class                    SelectionWindow      31       9       2
+              public data: public bool isClosed ; 
+   SelectionWindow.xaml.cs    function                    SelectionWindow      35       3       1
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -920,6 +994,11 @@
                SemiExp.cpp    function                             length     343       3       1
                SemiExp.cpp    function                               show     349      11       1
                SemiExp.cpp    function                               main     364      38       5
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+      Settings.Designer.cs   namespace                            WpfApp3      12      19       4
+      Settings.Designer.cs       class                           Settings      18      13       3
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
@@ -1137,6 +1216,20 @@
 
                  file name        type                               name    line    size    cplx
     -----------------------  ----------  ---------------------------------  ------  ------  ------
+              Translator.h       class                         Translator      50      11       9
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
+            Translator.cpp    function                         Translator      18       6       1
+            Translator.cpp    function                        ~Translator      27       4       1
+            Translator.cpp    function                       startProject      34      11       2
+            Translator.cpp    function                   returnConvertedF      47       8       2
+            Translator.cpp    function                     sysStrToStdStr      58       6       1
+            Translator.cpp    function                     stdStrToSysStr      67       3       1
+            Translator.cpp    function                               main      74      12       1
+
+                 file name        type                               name    line    size    cplx
+    -----------------------  ----------  ---------------------------------  ------  ------  ------
                 UnitTest.h   namespace                               Test      17      64      11
                 UnitTest.h    function                              Title      19       4       1
                 UnitTest.h       class                           TestBase      26      54       9
@@ -1198,6 +1291,8 @@
             FileSystem.cpp    function                               main     775     399      31
         GrammarHelpers.cpp    function              isFirstArgDeclaration     181      58       2
         GrammarHelpers.cpp    function                               main     631      59      17
+           MainWindow.g.cs    function       DebuggerNonUserCodeAttribute     181     144       2
+         MainWindow.g.i.cs    function       DebuggerNonUserCodeAttribute     181     144       2
                 Parser.cpp    function                               main      88      79       9
             ScopeStack.cpp    function                               main      49      75       1
                   Semi.cpp    function                               main     360     104       5
@@ -1238,38 +1333,12 @@
                 std :: vector < DeclarationNode > decl_ ; 
               public data: AbstrSynTree.h : 103 - struct ASTNode
                 std :: vector < Lexer :: ITokenCollection * > statements_ ; 
-              public data: AbstrSynTree.h : 74 - struct DeclarationNode
-                Lexer :: ITokenCollection * pTc = nullptr ; 
-              public data: AbstrSynTree.h : 75 - struct DeclarationNode
-                Access access_ ; 
-              public data: AbstrSynTree.h : 76 - struct DeclarationNode
-                DeclType declType_ ; 
-              public data: AbstrSynTree.h : 77 - struct DeclarationNode
-                std :: string package_ ; 
-              public data: AbstrSynTree.h : 78 - struct DeclarationNode
-                size_t line_ ; 
-              public data: AbstrSynTree.h : 91 - struct ASTNode
-                Type type_ ; 
-              public data: AbstrSynTree.h : 92 - struct ASTNode
-                Type parentType_ ; 
-              public data: AbstrSynTree.h : 93 - struct ASTNode
-                Name name_ ; 
-              public data: AbstrSynTree.h : 94 - struct ASTNode
-                Package package_ ; 
-              public data: AbstrSynTree.h : 95 - struct ASTNode
-                Path path_ ; 
-              public data: AbstrSynTree.h : 96 - struct ASTNode
-                size_t startLineCount_ ; 
-              public data: AbstrSynTree.h : 97 - struct ASTNode
-                size_t endLineCount_ ; 
-              public data: AbstrSynTree.h : 98 - struct ASTNode
-                size_t complexity_ ; 
-              public data: AbstrSynTree.h : 99 - struct ASTNode
-                std :: vector < ASTNode * > children_ ; 
-              public data: AbstrSynTree.h : 100 - struct ASTNode
-                std :: vector < DeclarationNode > decl_ ; 
-              public data: AbstrSynTree.h : 101 - struct ASTNode
-                std :: vector < Lexer :: ITokenCollection * > statements_ ; 
+              public data: Keywords.h : 13 - class Keywords
+                std :: vector < std :: string > handleKeywords ( std :: vector < std :: string > fileContent ) ; 
+              public data: MainWindow.g.cs : 154 - class MainWindow
+                private bool _contentLoaded ; 
+              public data: MainWindow.g.i.cs : 154 - class MainWindow
+                private bool _contentLoaded ; 
               public data: Parser.h : 84 - class IRule
                 static const bool Continue = true ; 
               public data: Parser.h : 85 - class IRule
@@ -1284,6 +1353,8 @@
                 size_t endLineCount = 0 ; 
               public data: ScopeStack.cpp : 30 - struct element
                 std :: string path_ ; 
+              public data: SelectionWindow.xaml.cs : 32 - class SelectionWindow
+                public bool isClosed ; 
               public data: Tokenizer.cpp : 34 - struct Context
                 std :: string token ; 
               public data: Tokenizer.cpp : 35 - struct Context
@@ -1314,5 +1385,5 @@
                 std :: vector < std :: string > publicVector ; 
 
 
-    searched   149 dirs
-   processed    63 files
+    searched   362 dirs
+   processed    85 files

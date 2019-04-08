@@ -39,7 +39,7 @@ namespace Lexer
   }
   TokenContext::~TokenContext()
   {
-    std::cout << "\n  TokenContext destroyed";
+    //std::cout << "\n  TokenContext destroyed";
     deleter(pWhiteSpaceState_);
     deleter(pAlphNumState_);
     deleter(pPunctuationState_);
@@ -61,7 +61,7 @@ namespace Lexer
 
   TokenSourceFile::~TokenSourceFile()
   {
-    std::cout << "\n  TokenSourceFile instance closing";
+    //std::cout << "\n  TokenSourceFile instance closing";
     if (fs_.good())
       fs_.close();
     std::cout << "\n";
@@ -70,11 +70,11 @@ namespace Lexer
 
   bool TokenSourceFile::open(std::string path)
   {
-    std::cout << "\n  attempting to open " << path;
+    //std::cout << "\n  attempting to open " << path;
     fs_ = std::ifstream(path, std::ios::in);
     if (fs_.good())
     {
-      std::cout << "\n  open successful";
+      //std::cout << "\n  open successful";
       ITokenState* pCurr = pContext_->pCurrentState_;
       ITokenState* pNext = pCurr->nextState();
       pContext_->pCurrentState_ = pNext;
@@ -375,7 +375,7 @@ namespace Lexer
 
   Toker::~Toker()
   {
-    std::cout << "\n  toker destroyed";
+    //std::cout << "\n  toker destroyed";
     delete pContext_;
   }
   //----< attempt to open source of tokens >-----------------------
