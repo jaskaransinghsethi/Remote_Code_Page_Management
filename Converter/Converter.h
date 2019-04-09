@@ -2,7 +2,7 @@
 ///////////////////////////////////////////////////////////////////////////////////
 // Converter.h - Converter class to convert cpp files into html files            //
 // ver 1.3                                                                       //
-// Jim Fawcett, CSE687 - Object Oriented Design, Fall 2018                       //
+// Jaskaran Singh, CSE687 - Object Oriented Design, Fall 2018                    //
 ///////////////////////////////////////////////////////////////////////////////////
 /*
  * Package Operations:

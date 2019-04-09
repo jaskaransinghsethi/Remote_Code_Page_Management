@@ -1,42 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ///////////////////////////////////////////////////////////////////////////
 // Converter.cpp - class used convert a cpp file to html file           //   
 // ver 1.3                                                              //
@@ -48,7 +9,6 @@
 #include "../DirExplorer-Naive/DirExplorerN.h"
 #include<regex>
 #include<conio.h>
-#include"../Keywords/Keywords.h"
 #include "../StringUtilities/StringUtilities.h"
 
 //Using namespace to avoid ambiguity with converter in StringUtilities.h
@@ -323,9 +283,6 @@ namespace html {
 
 			displayFiles(CppToHtmlFiles);
 		}
-
-		
-
 		return CppToHtmlFiles;
 	}
 

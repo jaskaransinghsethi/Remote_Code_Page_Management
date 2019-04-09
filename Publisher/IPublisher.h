@@ -3,7 +3,7 @@
 // ver 1.0																		//
 //																				//
 // Application    : CSE-687 Project 3					                        //
-// Platform       : Visual Studio 2017 Community Edition                        //
+// Platform       : Visual Studio 2017					                        //
 //                  Windows 10 Professional 64-bit, Acer Aspire R5-571TG        //
 // Author         : Jaskaran Singh, EECS Department, Syracuse University        //
 //                  315-925-9941, jsingh09@syr.edu							    //

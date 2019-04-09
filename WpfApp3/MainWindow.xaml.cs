@@ -1,6 +1,6 @@
 ﻿//////////////////////////////////////////////////////////////////////////////////
-// WPF GUI        : Defines all the functionalitis of WPF GUI                   //
-// ver 1.0																		//
+// WPF CS FILe    : Defines all the functionalitis of WPF GUI                   //
+// ver 1.1																		//
 //																				//
 // Application    : CSE-687 Project 3					                        //
 // Platform       : Visual Studio 2017 Community Edition                        //
@@ -18,6 +18,11 @@
  * supports Regex & file patterns.
  * Display view supports displaying all converted valid html file in a browser
  * or using a selection windows pop box
+ * 
+ * Required File:
+ * --------------
+ * MainWindow.xaml, MainWindow.xaml.cs               //WPF Main Window
+ * SelectionWindow.xaml, SelectionWindow.xaml        //WPF Selection Window
  * 
  * Maintenance History:
  * --------------------
@@ -41,18 +46,26 @@ namespace WpfApp3
 {
 
     /// <summary>
-    /// Main Window
+    /// Main Window Class
     /// </summary>
     public partial class MainWindow : Window
     {
+        //Object of C++ CLI Translator
         Translator trans;
+        
+        //String to store path
         public string path { get; set; }
+
+        //List of String to store converted files
         List<string> convertedFiles { get; set; } = new List<string>();
 
+        //String to store regex
         public string regex { get; set; }
 
+        //String to store patterns
         public string patterns { get; set; }
 
+        //String to store options
         public string options { get; set; }
 
         //Main Window constructor
@@ -118,7 +131,6 @@ namespace WpfApp3
                     Console.WriteLine(ex.Message);
                 }
             });
-
             thread.Start();
         }
 
@@ -374,7 +386,7 @@ namespace WpfApp3
         {
             if(e.Key == Key.Enter)
             {
-                if (txtRegexs.Text == "")
+                if (txtPatterns.Text == "")
                 {
                     staturBar.Text = "Patterns Empty";
                     string message = "Please input valid Pattern";
