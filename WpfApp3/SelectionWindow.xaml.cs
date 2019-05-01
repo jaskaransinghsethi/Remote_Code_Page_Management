@@ -29,7 +29,6 @@ namespace WpfApp3
     /// </summary>
     public partial class SelectionWindow : Window
     {
-        public bool isClosed;
         //Default Constructor
         public SelectionWindow()
         {

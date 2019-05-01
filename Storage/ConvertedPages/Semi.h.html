@@ -1,0 +1,136 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
+﻿#ifndef SEMI_H
+#define SEMI_H
+<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// Semi.h - Collects groups of tokens that are useful for          //</div>
+<div class="comments">// ver 1.2   grammatical analysis                                  //</div>
+<div class="comments">//                                                                 //</div>
+<div class="comments">// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2019       //</div>
+<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+<div class="comments">/*
+ * Package Operations:
+ * -------------------
+ * - This package contains a Semi class that implements ITokenCollection
+ *   interface.  It also contains a Factory class that creates instances
+ *   of Semi.
+ * - Semiressions are collections of tokens that are useful for 
+ *   detecting specific grammatical constructs.  It is important that
+ *   each instance of Semi contains all tokens necessary to make a 
+ *   decision about a grammatical construct, e.g., is this a class?
+ * - It is also important that each Semi instance does not contain 
+ *   tokens relevant for more than one detection.
+ * - This code demonstrates how to build a semi-expression collector,
+ *   using the state-based tokenizer. 
+ * 
+ * Required Files:
+ * ---------------
+ * Semi.h, Semi.cpp,
+ * ITokenCollection.h, 
+ * Toker.h, Toker.cpp
+ * 
+ * Maintenance History
+ * -------------------
+ * ver 1.2 : 03 Mar 2019
+ * - fixed bug in getTok by explicitly returning token if comment
+ *   bug reported by Anonymous in Piazza Q&A, @98
+ * ver 1.1 : 27 Feb 2019
+ * - fixed bug in fold() by returning if range-based for
+ * ver 1.0 : 09 Jan 2019
+ * - first release
+ * 
+ * Note:
+ * - This is a redesign of the Semi package you will find in the Parser folder
+ *   in the Repository.
+ */</div>
+
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include "ITokenCollection.h"
+#include "../Tokenizer/Toker.h"
+
+namespace Lexer
+{
+  <div class="comments">///////////////////////////////////////////////////////////////////</div>
+  <div class="comments">// Semi class</div>
+  <div class="comments">// - collects tokens from Lexer::Toker.</div>
+  <div class="comments">// - terminates collection on collecting the special tokens:</div>
+  <div class="comments">//     ";", "{", "}", and "\n" when the first character is "#"</div>
+  <div class="comments">// - It implements the IEnumerable interface, which is a contract</div>
+  <div class="comments">//   to return an Enumerater object that foreach uses to step through</div>
+  <div class="comments">//   items in a collection.</div>
+  <div class="comments">// - It also implements the ITokenCollection interface that the</div>
+  <div class="comments">//   parser will use to extract token sequences for rule-checking.</div>
+
+  class Semi : public ITokenCollection
+  <div class="classes">{
+  private:
+    TokColl toks;  <div class="comments">// private collection of tokens</div>
+    Toker* pToker_ = nullptr;
+
+  public:
+    Semi(bool createToker = false);
+    Semi(std::vector&lt;Token&gt; list, bool createToker = false);
+    virtual ~Semi();
+
+    virtual Toker* getToker() override;
+    virtual void setToker(Toker* pToker) override;
+    virtual void addRange(TokColl coll) override;
+    virtual bool open(const std::string& source) override;
+    virtual void close() override;
+    virtual size_t size() const override;
+    virtual std::string ToString() override;
+    virtual size_t lineCount() override;
+    bool isTerminator(Token tok);
+    virtual void trim() override;
+    virtual bool contains(Token tok) const override;
+    <div class="comments">// note find functions return index reference of founct token position</div>
+    virtual bool find(Token tok, size_t& index, size_t offset = 0) const override;   <div class="comments">// find tok if in semi</div>
+    virtual bool findLast(Token tok, size_t&index) const override;
+    virtual Token predecessor(Token tok) override;
+    virtual Token last() const override;
+    virtual bool hasSequence(TokColl tokSeq) override;
+    void fold();
+    virtual bool get() override;
+    virtual void clone(const ITokenCollection& tc, size_t offset = 0) override;
+    virtual ITokenCollection* clone() const override;
+    virtual Token& operator[](size_t i) override;
+    virtual Token operator[](size_t i) const override;
+    virtual iterator begin() override;
+    virtual iterator end() override;
+    virtual ITokenCollection* add(Token token) override;
+    virtual bool remove(size_t index) override;
+    virtual bool remove(Token tok) override;
+    virtual void clear() override;
+    virtual bool isDone() override;
+    virtual bool insert(size_t n, Token tok) override;
+    virtual bool hasTerminator() override;
+    virtual std::string show() const override;
+    virtual bool isComment(Token tok) override;
+  };</div>
+
+  class Factory
+  <div class="classes">{
+  public:
+    static ITokenCollection* create(bool createToker = false)
+    <div class="functions">{
+      Semi* rtn = new Semi(createToker);
+      return rtn;
+    }</div>
+  };</div>
+}</div>
+
+#endif
+</pre>
+</body>
+</html>

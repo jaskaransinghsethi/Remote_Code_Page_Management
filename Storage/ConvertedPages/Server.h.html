@@ -1,0 +1,223 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
+#pragma once
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// ServerPrototype.h - Console App that processes incoming messages  //</div>
+<div class="comments">// ver 1.2                                                           //</div>
+<div class="comments">// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2018         //</div>
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+<div class="comments">/*
+*  Package Operations:
+* ---------------------
+*  Package contains one class, Server, that contains a Message-Passing Communication
+*  facility. It processes each message by invoking an installed callable object
+*  defined by the message's command key.
+*  - This is implemented with a message dispatcher (unodered_map&lt;Msg.Id,ServerProc&gt;
+*    where ServerProcs are defined for each type of processing required by the server.
+*
+*  Message handling runs on a child thread, so the Server main thread is free to do
+*  any necessary background processing (none, so far).
+*
+*  Required Files:
+* -----------------
+*  ServerPrototype.h, ServerPrototype.cpp
+*  Comm.h, Comm.cpp, IComm.h
+*  Message.h, Message.cpp (static library)
+*  Process.h, Process.cpp (static library)
+*  FileSystem.h, FileSystem.cpp
+*  Utilities.h
+*
+*  Maintenance History:
+* ----------------------
+*  ver 1.2 : 22 Apr 2018
+*  - added NoSqlDb to server members
+*  - added simple demo of db in Server startup
+*  ver 1.1 : 09 Apr 2018
+*  - added ServerProcs for
+*    - sending files for popup display
+*    - executing remote analysis
+*  ver 1.0 : 03/27/2018
+*  - first release
+*/</div>
+#include &lt;vector&gt;
+#include &lt;string&gt;
+#include &lt;unordered_map&gt;
+#include &lt;functional&gt;
+#include &lt;thread&gt;
+#include "../Message/Message.h"
+#include "../MsgPassingComm/Comm.h"
+#include &lt;windows.h&gt;
+#include &lt;tchar.h&gt;
+#include "../Publisher/IPublisher.h"
+#include "../FileSystem/FileSystem.h"
+#include "../DirExplorer-Naive/DirExplorerN.h"
+
+namespace Repository
+{
+	using File = std::string;
+	using Files = std::vector&lt;File&gt;;
+	using Dir = std::string;
+	using Dirs = std::vector&lt;Dir&gt;;
+	using SearchPath = std::string;
+	using Key = std::string;
+	using Msg = MsgPassingCommunication::Message;
+	using ServerProc = std::function&lt;void(Msg, std::function&lt;void(Msg)&gt;)&gt;;
+	using MsgDispatcher = std::unordered_map&lt;Key, ServerProc&gt;;
+
+	const SearchPath storageRoot = "../Storage";  <div class="comments">// root for all server file storage</div>
+	const MsgPassingCommunication::EndPoint serverEndPoint("localhost", 8080);  <div class="comments">// listening endpoint</div>
+
+	class Server
+<div class="classes">	{
+	public:
+		Server(MsgPassingCommunication::EndPoint ep, const std::string& name);
+		void start();
+		void stop();
+		void addMsgProc(Key key, ServerProc proc);
+		bool hasMessageKey(const Key& key);
+		void processMessages();
+		std::function&lt;void(Msg)&gt; postMessage = [&](Msg msg) <div class="functions">{ comm_.postMessage(msg); }</div>;
+		MsgPassingCommunication::Message getMessage();
+		static Dirs getDirs(const SearchPath& path = storageRoot);
+		static Files getFiles(const SearchPath& path = storageRoot);
+		MsgPassingCommunication::Context* getContext();
+		std::string setSendFilePath(const std::string& relPath);
+		std::string setSaveFilePath(const std::string& relPath);
+		std::string getSendFilePath();
+		std::string getSaveFilePath();
+	private:
+		MsgPassingCommunication::Comm comm_;
+		MsgDispatcher dispatcher_;
+		std::thread msgProcThrd_;
+	};</div>
+
+	<div class="comments">//----&lt; return reference to MsgPassingCommunication context &gt;--------</div>
+
+	inline MsgPassingCommunication::Context* Server::getContext()
+<div class="functions">	{
+		return comm_.getContext();
+	}</div>
+	<div class="comments">//----&lt; initialize server endpoint and give server a name &gt;----------</div>
+
+	inline Server::Server(MsgPassingCommunication::EndPoint ep, const std::string& name)
+		: comm_(ep, name) <div class="functions">{
+	}</div>
+
+	inline std::string Server::setSendFilePath(const std::string& relPath)
+<div class="functions">	{
+		comm_.setSendFilePath(relPath);
+	}</div>
+	inline std::string Server::setSaveFilePath(const std::string& relPath)
+<div class="functions">	{
+		comm_.setSaveFilePath(relPath);
+	}</div>
+	inline std::string Server::getSendFilePath()
+<div class="functions">	{
+		comm_.getSendFilePath();
+	}</div>
+	inline std::string Server::getSaveFilePath()
+<div class="functions">	{
+		comm_.getSaveFilePath();
+	}</div>
+	<div class="comments">//----&lt; start server's instance of Comm &gt;----------------------------</div>
+
+	inline void Server::start()
+<div class="functions">	{
+		comm_.start();
+	}</div>
+	<div class="comments">//----&lt; stop Comm instance &gt;-----------------------------------------</div>
+
+	inline void Server::stop()
+<div class="functions">	{
+		if (msgProcThrd_.joinable())
+			msgProcThrd_.join();
+		comm_.stop();
+	}</div>
+
+	<div class="comments">//----&lt; get message from Comm &gt;--------------------------------------</div>
+
+	inline MsgPassingCommunication::Message Server::getMessage()
+<div class="functions">	{
+		Msg msg = comm_.getMessage();
+		return msg;
+	}</div>
+	<div class="comments">//----&lt; add ServerProc callable object to server's dispatcher &gt;------</div>
+
+	inline void Server::addMsgProc(Key key, ServerProc proc)
+<div class="functions">	{
+		dispatcher_[key] = proc;
+	}</div>
+	<div class="comments">//----&lt; does server have specified key? &gt;----------------------------</div>
+
+	inline bool Server::hasMessageKey(const Key& key)
+<div class="functions">	{
+		for (auto item : dispatcher_)
+		{
+			if (item.first == key)
+				return true;
+		}
+		return false;
+	}</div>
+	<div class="comments">//----&lt; start processing messages on child thread &gt;------------------</div>
+	
+	inline void Server::processMessages()
+<div class="functions">	{
+		auto proc = [&]()
+		{
+			if (dispatcher_.size() == 0)
+			{
+				std::cout &lt;&lt; "\n  no server procs to call";
+				return;
+			}
+			while (true)
+			{
+				Msg msg = getMessage();
+				std::cout &lt;&lt; "\n  received message: " &lt;&lt; msg.command() &lt;&lt; " from " &lt;&lt; msg.from().toString();
+				if (msg.containsKey("verbose"))
+				{
+					std::cout &lt;&lt; "\n";
+					msg.show();
+				}
+				if (msg.command() == "serverQuit")
+					break;
+				Msg reply;
+				reply.to(msg.from());
+				reply.from(msg.to());
+				if (hasMessageKey(msg.command()))
+				{
+					dispatcher_[msg.command()](msg, postMessage);
+				}
+				else
+				{
+					reply.command("error - unknown command");
+				}
+				if (msg.to().port != msg.from().port)  <div class="comments">// avoid infinite message loop</div>
+				{
+					postMessage(reply);
+					msg.show();
+					reply.show();
+				}
+				else
+					std::cout &lt;&lt; "\n  server attempting to post to self";
+			}
+			std::cout &lt;&lt; "\n  server message processing thread is shutting down";
+		};
+		std::thread t(proc);
+		<div class="comments">//SetThreadPriority(t.native_handle(), THREAD_PRIORITY_HIGHEST);</div>
+		std::cout &lt;&lt; "\n  starting server thread to process messages";
+		msgProcThrd_ = std::move(t);
+	}</div>
+}
+</pre>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!Doctype html>
+<html>
+<head>
+  <style>
+    body {
+      padding: 15px 40px;
+      font-family: Consolas;
+      font-size: 1.25em;
+      font-weight: normal;
+    }
+
+    span {
+      display: inline;
+    }
+
+    button {
+      position: fixed;
+      bottom: 50px;
+      right: 50px;
+    }
+    .toggleClassDisplay {
+    }
+
+    .toggleMethodDisplay {
+    }
+  </style>
+  <script>
+      function showHideClass(className) {
+        let elems = document.getElementsByClassName(className);
+        if (elems === null) {
+          return;
+        }
+        for (let i = 0; i < elems.length; ++i) {
+          let displayProp = elems[i].style.display;
+          if (displayProp === 'none')
+            elems[i].style['display'] = "inline";
+          else
+            elems[i].style['display'] = "none";
+        }
+      }
+  </script>
+</head>
+<body>
+  <h3>Project #1 helper</h3>
+  <button onclick="showHideClass('toggleMethodDisplay')">Show or Hide Method Contents</button>
+<pre>
+/////////////////////////////////////////////////////////////////////
+// Proj1Helper.cpp - will become webified                          //
+//                                                                 //
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2019       //
+/////////////////////////////////////////////////////////////////////
+
+#include "Proj1Helper.h"
+
+X::X()
+<span class="toggleMethodDisplay">{
+  str_ = "";
+}</span>
+
+X::X(const std::string& str)
+<span class="toggleMethodDisplay"> : str_(str)
+{
+}</span>
+
+std::string X::str()
+<span class="toggleMethodDisplay">{
+  return str_;
+}</span>
+
+#include &lt;iostream&gt;
+
+int main()
+<span class="toggleMethodDisplay">{
+
+  std::cout << "\n  Class to be Webified";
+  std::cout << "\n ----------------------";
+
+  X x("instance of X here");
+  std::cout << "\n  " << x.str();
+  std::cout << "\n\n";
+}</span>
+</pre>
+  </body>
+</html>

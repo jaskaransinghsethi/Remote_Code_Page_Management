@@ -1,0 +1,480 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3><a href="Semi.h.html">Semi.h</a>&nbsp;&nbsp;&nbsp;</h3><hr><pre>
+<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// Semi.cpp - Collects groups of tokens that are useful for        //</div>
+<div class="comments">// ver 1.2    grammatical analysis                                 //</div>
+<div class="comments">//                                                                 //</div>
+<div class="comments">// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2019       //</div>
+<div class="comments">/////////////////////////////////////////////////////////////////////</div>
+
+#include "Semi.h"
+#include &lt;sstream&gt;
+
+namespace Lexer
+{
+  Semi::Semi(bool createToker<div class="comments">/* = false*/</div>)
+  <div class="functions">{
+    if (createToker)
+      pToker_ = new Toker;
+  }</div>
+
+  Semi::Semi(std::vector&lt;Token&gt; list, bool createToker<div class="comments">/* = false*/</div>)
+  <div class="functions">{
+    if (createToker)
+      pToker_ = new Toker;
+
+    for (Token tok : list)
+      toks.push_back(tok);
+  }</div>
+
+  Semi::~Semi()
+  <div class="functions">{
+    delete pToker_;
+    pToker_ = nullptr;
+  }</div>
+
+  Toker* Semi::getToker()
+  <div class="functions">{
+    return pToker_;
+  }</div>
+
+  void Semi::setToker(Toker* pToker)
+  <div class="functions">{
+    if (pToker_ != nullptr)
+      delete pToker_;
+    pToker_ = pToker;
+  }</div>
+
+  void Semi::addRange(TokColl coll)
+  <div class="functions">{
+    for (Token tok : coll)
+      toks.push_back(tok);
+  }</div>
+
+  bool Semi::open(const std::string& source)
+  <div class="functions">{
+    return pToker_-&gt;open(source);
+  }</div>
+
+  void Semi::close()
+  <div class="functions">{
+    pToker_-&gt;close();
+  }</div>
+  <div class="comments">//----&lt; return number of tokens in semi-expression &gt;-------------</div>
+
+  size_t Semi::size() const
+  <div class="functions">{
+    return toks.size();
+  }</div>
+  <div class="comments">//----&lt; convert semi to string &gt;---------------------------------</div>
+
+  std::string Semi::ToString()
+  <div class="functions">{
+    std::string temp;
+    for (Token tok : toks)
+    {
+      temp += tok += " ";
+    }
+    return temp;
+  }</div>
+  <div class="comments">//----&lt; return number of lines processed &gt;-----------------------</div>
+
+  size_t Semi::lineCount()
+  <div class="functions">{
+    return pToker_-&gt;lineCount();
+  }</div>
+  <div class="comments">//----&lt; is tok a terminator for the current semi-expression? &gt;---</div>
+
+  bool Semi::isTerminator(Token tok)
+  <div class="functions">{
+    if (tok == ";" || tok == "{" || tok == "}")
+      return true;
+    if (tok == "\n")
+    {
+      trim();
+      if (toks.size() &gt; 0 && toks[0] == "#")
+        return true;
+    }
+    return false;
+  }</div>
+  <div class="comments">//----&lt; remove leading newlines &gt;--------------------------------</div>
+
+  void Semi::trim()
+  <div class="functions">{
+    size_t count = 0;
+    for (count = 0; count &lt; toks.size(); ++count)
+    {
+      if (toks[count] != "\n")
+        break;
+    }
+    if (count == 0)
+      return;
+
+    TokColl temp;
+    for (size_t i = count; i &lt; toks.size(); ++i)
+      temp.push_back(toks[i]);
+    toks = temp;
+  }</div>
+  <div class="comments">//----&lt; does semi contain specific token? &gt;----------------------</div>
+
+  bool Semi::contains(Token tok) const
+  <div class="functions">{
+    for (Token test : toks)
+      if (test == tok)
+        return true;
+    return false;
+  }</div>
+  <div class="comments">//----&lt; find token in semi &gt;-------------------------------------</div>
+
+  bool Semi::find(Token tok, size_t& index, size_t offset) const
+  <div class="functions">{
+    for (index = offset; index &lt; size(); ++index)
+    {
+      if (toks[index] == tok)
+        return true;
+    }
+    index = size();
+    return false;
+  }</div>
+  <div class="comments">//----&lt; find last occurance of tok &gt;-----------------------------</div>
+
+  bool Semi::findLast(Token tok, size_t& index) const
+  <div class="functions">{
+    int pos = -1;
+    for (size_t i = 0; i &lt; toks.size(); ++i)
+    {
+      if (toks[i] == tok)
+        pos = int(i);
+    }
+    if (pos == -1)
+      index = size();
+    else
+      index = pos;
+    return (pos != -1);
+  }</div>
+  <div class="comments">//----&lt; find predecessor of token &gt;------------------------------</div>
+
+  Token Semi::predecessor(Token tok)
+  <div class="functions">{
+    size_t index;
+    if (find(tok, index) && index &gt; 0)
+    {
+      return toks[index - 1];
+    }
+    return "";
+  }</div>
+  <div class="comments">//----&lt; return last token in collection &gt;------------------------</div>
+
+  Token Semi::last() const
+  <div class="functions">{
+    return toks[toks.size() - 1];
+  }</div>
+  <div class="comments">//----&lt; test for ordered sequence of tokens &gt;--------------------</div>
+
+  bool Semi::hasSequence(TokColl tokSeq)
+  <div class="functions">{
+    int position = 0;
+    for (Token tok : toks)
+    {
+      if (position == tokSeq.size() - 1)
+        return true;
+      if (tok == tokSeq[position])
+        ++position;
+    }
+    return (position == tokSeq.size() - 1);
+  }</div>
+  <div class="comments">//----&lt; fold &gt;---------------------------------------------------</div>
+
+  void Semi::fold()
+  <div class="functions">{
+    TokColl tc1{ "for", "(", ":" };  <div class="comments">// range-based for</div>
+    if (hasSequence(tc1))
+      return;
+    TokColl tc{ "for", "(", ";" };   <div class="comments">// conventional for</div>
+    if (hasSequence(tc))
+    {
+      Semi temp;
+      temp.addRange(this-&gt;toks);
+      get();  <div class="comments">// get i&lt;N;</div>
+      temp.addRange(this-&gt;toks);
+      get();
+      temp.addRange(this-&gt;toks);  <div class="comments">// get ++i) .. {</div>
+      toks = temp.toks;
+    }
+  }</div>
+  <div class="comments">//----&lt; used by parser to get the next collection of tokens &gt;----</div>
+
+  bool Semi::get()
+  <div class="functions">{
+    toks.clear();
+
+    while (!pToker_-&gt;isDone())
+    {
+      Token tok = pToker_-&gt;getTok();
+      if (tok != "\n")
+        toks.push_back(tok);
+      if (isComment(tok))
+        return true;
+      if (isTerminator(tok))
+      {
+        fold();
+        return true;
+      }
+    }
+    return false;
+  }</div>
+  <div class="comments">//----&lt; clone replaces tokens in caller with tokens of argument &gt;----</div>
+
+  void Semi::clone(const ITokenCollection& tc, size_t offset)
+  <div class="functions">{
+    toks.clear();
+    for (size_t i = offset; i &lt; tc.size(); ++i)
+    {
+      toks.push_back(tc[i]);
+    }
+  }</div>
+  <div class="comments">//----&lt; clone tokens of existing SemiExp &gt;---------------------------</div>
+  <div class="comments">/*
+  *  Note:
+  *  - Returns pointer to new SemiExp on heap.  Application is
+  *    responsible for deleting.
+  *  - Does not clone pointer to _toker or hasToken members!
+  */</div>
+  ITokenCollection* Semi::clone() const
+  <div class="functions">{
+    Semi* pClone = new Semi;
+    for (size_t i = 0; i &lt; size(); ++i)
+      pClone-&gt;add(toks[i]);
+    return pClone;
+  }</div>
+  <div class="comments">//----&lt; indexer allows us to index for a specific token &gt;--------</div>
+
+  Token& Semi::operator[](size_t i)
+  <div class="functions">{
+    if (i &lt; 0 || toks.size() &lt;= i)
+      throw(std::exception());
+    return toks[i];
+  }</div>
+  <div class="comments">//----&lt; indexer allows us to index for a specific token &gt;--------</div>
+
+  Token Semi::operator[](size_t i) const
+  <div class="functions">{
+    if (i &lt; 0 || toks.size() &lt;= i)
+      throw(std::exception());
+    return toks[i];
+  }</div>
+  <div class="comments">//----&lt; begin iterator &gt;-----------------------------------------</div>
+
+  Semi::iterator Semi::begin()
+  <div class="functions">{
+    return toks.begin();
+  }</div>
+  <div class="comments">//----&lt; end iterator &gt;-------------------------------------------</div>
+
+  Semi::iterator Semi::end()
+  <div class="functions">{
+    return toks.end();
+  }</div>
+  <div class="comments">//----&lt; add a token to the end of this semi-expression &gt;---------</div>
+
+  ITokenCollection* Semi::add(Token token)
+  <div class="functions">{
+    toks.push_back(token);
+    return this;
+  }</div>
+  <div class="comments">//----&lt; remove element at index &gt;---------------------------------</div>
+
+  bool Semi::remove(size_t index)
+  <div class="functions">{
+    iterator iter = toks.erase(toks.begin() + index);
+    return (toks.begin() &lt;= iter && iter &lt; toks.end());
+  }</div>
+  <div class="comments">//----&lt; remove first instance of tok &gt;-----------------------------</div>
+
+  bool Semi::remove(Token tok)
+  <div class="functions">{
+    size_t pos;
+    if (!find(tok, pos))
+      return false;
+    return remove(pos);
+  }</div>
+  <div class="comments">//----&lt; clear all the tokens from internal collection &gt;----------</div>
+
+  void Semi::clear()
+  <div class="functions">{
+    toks.clear();
+  }</div>
+  <div class="comments">//----&lt; are we at the end of the token source stream? &gt;----------</div>
+
+  bool Semi::isDone()
+  <div class="functions">{
+    return pToker_-&gt;isDone();
+  }</div>
+  <div class="comments">//----&lt; insert a token at position n &gt;---------------------------</div>
+
+  bool Semi::insert(size_t n, Token tok)
+  <div class="functions">{
+    if (n &lt; 0 || n &gt;= tok.size())
+      return false;
+    TokColl::iterator iter = toks.begin();
+    toks.insert(iter + n, tok);
+    return true;
+  }</div>
+  <div class="comments">//----&lt; does this semi-expression contain a terminator? &gt;--------</div>
+
+  bool Semi::hasTerminator()
+  <div class="functions">{
+    if (toks.size() &lt;= 0)
+      return false;
+    if (isTerminator(toks[toks.size() - 1]))
+      return true;
+    return false;
+  }</div>
+  <div class="comments">//----&lt; display contents of semi-expression on console &gt;---------</div>
+
+  std::string Semi::show() const
+  <div class="functions">{
+    std::ostringstream out;
+    out &lt;&lt; "\n-- ";
+    for (Token tok : toks)
+    {
+      if (tok != "\n")
+        out &lt;&lt; tok &lt;&lt; " ";
+      else
+        out &lt;&lt; "\n";
+    }
+    return out.str();
+  }</div>
+  <div class="comments">//----&lt; is this token a comment? &gt;---------------------------------</div>
+
+  bool Semi::isComment(Token tok)
+  <div class="functions">{
+    Toker* pToker = getToker();
+    return (pToker-&gt;isSingleLineComment(tok) || pToker-&gt;isMultipleLineComment(tok));
+  }</div>
+}</div>
+
+#ifdef TEST_SEMI
+
+using namespace Lexer;
+
+int main()
+<div class="functions">{
+  std::cout &lt;&lt; "\n  testing Semi";
+  std::cout &lt;&lt; "\n ==============";
+
+  <div class="comments">// Access Semi through interface and object factory.</div>
+  <div class="comments">// That isolates client from any changes that may occur to Semi</div>
+  <div class="comments">// as long as ITokenCollection doesn't change.</div>
+
+  ITokenCollection* pSemi = Factory::create(true);  <div class="comments">// true creates toker</div>
+
+  <div class="comments">//std::string source = "../SemiExpression/semi.h";</div>
+  std::string source = "../TestFiles/DirExplorerN.h";
+  if (!pSemi-&gt;open(source))
+  {
+    std::cout &lt;&lt; "\n  Can't open \"" + source + "\"";
+    return 1;
+  }
+  Toker* pToker = pSemi-&gt;getToker();
+  pToker-&gt;doReturnComments(true);
+
+  while (!pSemi-&gt;isDone())
+  {
+    pSemi-&gt;get();
+    std::cout &lt;&lt; pSemi-&gt;show();
+  }
+  std::cout &lt;&lt; "\n";
+
+  std::cout &lt;&lt; "\n  demonstrating semi operations";
+  std::cout &lt;&lt; "\n -------------------------------";
+
+  ITokenCollection* pTest = Factory::create();
+
+  pTest-&gt;add("one")-&gt;add("two")-&gt;add("three");
+  std::cout &lt;&lt; pTest-&gt;show();
+  TokColl coll1 { "one", "three" };
+  if (pTest-&gt;hasSequence(coll1))
+    std::cout &lt;&lt; "\n  semi has token \"one\" followed by token \"three\"";
+  TokColl coll2{ "foo", "Two" };
+  if (!pTest-&gt;hasSequence(coll2))
+    std::cout &lt;&lt; "\n  semi does not have token \"foo\" followed by token \"two\"";
+  if (!pTest-&gt;hasTerminator())
+    std::cout &lt;&lt; "\n  semi does not have terminator";
+
+  std::cout &lt;&lt; "\n  demonstrate changing semi with insert # and add \\n";
+  pTest-&gt;insert(0, "#");
+  pTest-&gt;add("\n");
+  std::cout &lt;&lt; pTest-&gt;show();
+
+  std::cout &lt;&lt; "\n  removing \\n";
+  pTest-&gt;remove("\n");
+  <div class="comments">//size_t pos = pTest-&gt;find("\n");</div>
+  <div class="comments">//pTest-&gt;remove(pos);</div>
+  std::cout &lt;&lt; pTest-&gt;show();
+
+  std::cout &lt;&lt; "\n  demonstrate semi tests";
+  if (pTest-&gt;hasTerminator())
+    std::cout &lt;&lt; "\n  semi has terminator";
+  else
+    std::cout &lt;&lt; "\n  semi does not have terminator";
+
+  size_t index;
+  Token tok = "two";
+  if (pTest-&gt;find(tok, index))
+    std::cout &lt;&lt; "\n  found token \"" &lt;&lt; tok &lt;&lt; "\" at position " &lt;&lt; index;
+  else
+    std::cout &lt;&lt; "\n  did not find token \"" &lt;&lt; tok &lt;&lt; "\"";
+  tok = "foo";
+  if (pTest-&gt;find(tok, index))
+    std::cout &lt;&lt; "\n  found token \"" &lt;&lt; tok &lt;&lt; "\" at position " &lt;&lt; index;
+  else
+    std::cout &lt;&lt; "\n  did not find token \"" &lt;&lt; tok &lt;&lt; "\"";
+
+  tok = "one";
+  Token tok2 = pTest-&gt;predecessor(tok);
+  std::cout &lt;&lt; "\n  predecessor of \"" &lt;&lt; tok &lt;&lt; "\" is \"" &lt;&lt; tok2;
+  tok = "bar";
+  tok2 = pTest-&gt;predecessor(tok);
+    std::cout &lt;&lt; "\n  predecessor of \"" &lt;&lt; tok &lt;&lt; "\" is \"" &lt;&lt; tok2 &lt;&lt; "\"";
+
+  std::cout &lt;&lt; "\n  indexing semi\n  ";
+  for (size_t i = 0; i &lt; pTest-&gt;size(); ++i)
+    std::cout &lt;&lt; (*pTest)[i] &lt;&lt; " ";
+  std::cout &lt;&lt; "\n  using range for:\n  ";
+  for(auto tk : (*pTest))
+    std::cout &lt;&lt; tk &lt;&lt; " ";
+
+  std::cout &lt;&lt; "\n  testing clones:";
+  ITokenCollection* pTest2 = nullptr;
+  std::cout &lt;&lt; "\n    clone target after cloning:";
+  pTest2 = pTest-&gt;clone();
+  std::cout &lt;&lt; pTest2-&gt;show();
+  pTest-&gt;add("anotherTok")-&gt;add(";");
+  pTest2-&gt;clone(*pTest);
+  std::cout &lt;&lt; pTest2-&gt;show();
+
+  std::cout &lt;&lt; "\n  testing detection of comments:";
+  bool test1 = pTest2-&gt;isComment("<div class="comments">// cpp comment");</div>
+  bool test2 = pTest2-&gt;isComment("<div class="comments">/* a comment */</div>");
+  if (test1 && test2)
+    std::cout &lt;&lt; "\n  detection of comments passes";
+  else
+    std::cout &lt;&lt; "\n  detection of comments fails";
+  std::cout &lt;&lt; "\n\n";
+}</div>
+#endif
+
+</pre>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!Doctype html>
+<html>
+  <head>
+    <style>
+      body {
+        padding:15px 40px;
+        font-family: Consolas;
+        font-size: 1.25em;
+        font-weight: normal;
+      }
+      span {
+        display:inline;
+      }
+      button {
+        position: fixed;
+        bottom: 50px;
+        right: 50px;
+      }
+      .toggleClassDisplay {  }
+      .toggleMethodDisplay { }
+    </style>
+    <script>
+      function showHideClass(className) {
+        let elems = document.getElementsByClassName(className);
+        if (elems === null) {
+          return;
+        }
+        for (let i = 0; i < elems.length; ++i) {
+          let displayProp = elems[i].style.display;
+          if (displayProp === 'none')
+            elems[i].style['display'] = "inline";
+          else
+            elems[i].style['display'] = "none";
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h3>Project #1 helper</h3>
+    <button onclick="showHideClass('toggleClassDisplay')">Show or Hide Class Contents</button>
+    <pre>
+#pragma once
+/////////////////////////////////////////////////////////////////////
+// Proj1Helper.h  - will become webified                           //
+//                                                                 //
+// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2019       //
+/////////////////////////////////////////////////////////////////////
+
+#include &lt;string&gt;
+
+class X 
+<span class="toggleClassDisplay">{
+public:
+  X();
+  X(const std::string& str);
+  std::string str();
+private:
+  std::string str_;
+};</span>
+  </pre>
+  </body>
+</html>

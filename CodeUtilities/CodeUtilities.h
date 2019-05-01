@@ -296,7 +296,7 @@ namespace Utilities
 		}
 	}
 
-	inline void ProcessCmdLine::showCmdLine(int argc, char** argv)
+	/*inline void ProcessCmdLine::showCmdLine(int argc, char** argv)
 	{
 		if (argc > 2)
 		{
@@ -316,7 +316,7 @@ namespace Utilities
 				out_ << argv[i] << " ";
 			}
 		}
-	}
+	}*/
 
 	inline void ProcessCmdLine::showCmdLine()
 	{

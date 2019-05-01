@@ -1,0 +1,335 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3><a href="Server.h.html">Server.h</a>&nbsp;&nbsp;&nbsp;</h3><hr><pre>
+<div class="comments">/////////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// ServerPrototype.cpp - Console App that processes incoming messages  //</div>
+<div class="comments">// ver 1.2                                                             //</div>
+<div class="comments">// Jim Fawcett, CSE687 - Object Oriented Design, Spring 2018           //</div>
+<div class="comments">/////////////////////////////////////////////////////////////////////////</div>
+
+#include "Server.h"
+#include "../Process/Process.h"
+#include &lt;chrono&gt;
+#include &lt;future&gt;
+
+	namespace MsgPassComm = MsgPassingCommunication;
+
+	using namespace Repository;
+	using namespace FileSystem;
+	using Msg = MsgPassingCommunication::Message;
+
+	<div class="comments">//----&lt; return name of every file on path &gt;----------------------------</div>
+
+	Files Server::getFiles(const Repository::SearchPath& path)
+<div class="functions">	{
+		return Directory::getFiles(path);
+	}</div>
+	<div class="comments">//----&lt; return name of every subdirectory on path &gt;--------------------</div>
+
+	Dirs Server::getDirs(const Repository::SearchPath& path)
+<div class="functions">	{
+		return Directory::getDirectories(path);
+	}</div>
+
+	namespace MsgPassingCommunication
+	{
+		<div class="comments">// These paths, global to MsgPassingCommunication, are needed by </div>
+		<div class="comments">// several of the ServerProcs, below.</div>
+		<div class="comments">// - should make them const and make copies for ServerProc usage</div>
+
+		std::string sendFilePath;
+		std::string saveFilePath;
+
+		<div class="comments">//----&lt; show message contents &gt;--------------------------------------</div>
+
+		template&lt;typename T&gt;
+		void show(const T& t, const std::string& msg)
+	<div class="functions">	{
+			std::cout &lt;&lt; "\n  " &lt;&lt; msg.c_str();
+			for (auto item : t)
+			{
+				std::cout &lt;&lt; "\n    " &lt;&lt; item.c_str();
+			}
+		}</div>
+		<div class="comments">//----&lt; test ServerProc simply echos message back to sender &gt;--------</div>
+
+		Repository::ServerProc echo = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply = msg;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			postMsg(reply);
+		};</div>
+		<div class="comments">//----&lt; getFiles ServerProc returns list of files on path &gt;----------</div>
+
+		Repository::ServerProc getFiles = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			reply.command("getFiles");
+			std::string path = msg.value("path");
+			if (path != "")
+			{
+				std::string searchPath = storageRoot;
+				if (path != ".")
+					searchPath = searchPath + "\\" + path;
+				Files files = Server::getFiles(searchPath);
+				size_t count = 0;
+				for (auto item : files)
+				{
+					std::string countStr = Utilities::Converter&lt;size_t&gt;::toString(++count);
+					reply.attribute("file" + countStr, item);
+				}
+			}
+			else
+			{
+				std::cout &lt;&lt; "\n  getFiles message did not define a path attribute";
+			}
+			postMsg(reply);
+		};</div>
+		<div class="comments">//----&lt; getDirs ServerProc returns list of directories on path &gt;-----</div>
+
+		Repository::ServerProc getDirs = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			reply.command("getDirs");
+			std::string path = msg.value("path");
+			if (path != "")
+			{
+				std::string searchPath = storageRoot;
+				if (path != ".")
+					searchPath = searchPath + "\\" + path;
+				Files dirs = Server::getDirs(searchPath);
+				size_t count = 0;
+				for (auto item : dirs)
+				{
+					if (item != ".." && item != ".")
+					{
+						std::string countStr = Utilities::Converter&lt;size_t&gt;::toString(++count);
+						reply.attribute("dir" + countStr, item);
+					}
+				}
+			}
+			else
+			{
+				std::cout &lt;&lt; "\n  getDirs message did not define a path attribute";
+			}
+			postMsg(reply);
+		};</div>
+
+
+		<div class="comments">//----&lt; sendFile ServerProc sends file to requester &gt;----------------</div>
+		<div class="comments">/*
+		*  - Comm sends bodies of messages with sendingFile attribute &gt;------
+		*/</div>
+		Repository::ServerProc sendFile = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			reply.command("sendFile");
+			reply.attribute("sendingFile", msg.value("fileName"));
+			reply.attribute("fileName", msg.value("fileName"));
+			if (msg.attributes()["convertedFile"] == "1")
+				reply.attribute("convertedFile", "1");
+			std::string path = msg.value("path");
+			if (path != "")
+			{
+				std::string searchPath = storageRoot;
+				if (path != "." && path != searchPath)
+					searchPath = searchPath + "\\" + path;
+				if (!FileSystem::Directory::exists(searchPath))
+				{
+					std::cout &lt;&lt; "\n  file source path does not exist";
+					postMsg(reply);
+				}
+				std::string filePath = searchPath + "/" + msg.value("fileName");
+				std::string fullSrcPath = FileSystem::Path::getFullFileSpec(filePath);
+				std::string fullDstPath = sendFilePath;
+				if (!FileSystem::Directory::exists(fullDstPath))
+				{
+					std::cout &lt;&lt; "\n  file destination path does not exist";
+					postMsg(reply);
+				}
+				fullDstPath += "/" + msg.value("fileName");
+				FileSystem::File::copy(fullSrcPath, fullDstPath);
+			}
+			else
+			{
+				std::cout &lt;&lt; "\n  getDirs message did not define a path attribute";
+			}
+			postMsg(reply);
+		};</div>
+
+		<div class="comments">//----&lt; sendFile ServerProc sends file to requester &gt;----------------</div>
+		<div class="comments">/*
+		*  - Comm sends bodies of messages with sendingFile attribute &gt;------
+		*/</div>
+		Repository::ServerProc saveFiles = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			reply.command("saveFiles");
+
+			std::string path = msg.value("path");
+			if (path != "")
+			{
+				std::string searchPath = storageRoot + "/" + FileSystem::Path::getName(path);
+				if (!FileSystem::Directory::exists(searchPath))
+				{
+					FileSystem::Directory::createOnPath(searchPath);
+				}
+				std::string fullSrcPath = path;
+				std::string fullDstPath = FileSystem::Path::getFullFileSpec(searchPath);
+				if (!FileSystem::Directory::exists(fullDstPath))
+				{
+					std::cout &lt;&lt; "\n  file destination path does not exist";
+					reply.attributes()["Output"] = "Files failed to upload";
+					postMsg(reply);
+				}
+				std::vector&lt;std::string&gt; pattern = Utilities::split(msg.value("patterns"), ' ');
+
+				DirExplorerN de(path);
+				for (auto patt : pattern)
+				{
+					de.addPattern(patt);
+				}
+
+				if (msg.value("options") == "/s")
+				{
+					de.recurse();
+				}
+
+				de.search();
+
+				std::vector&lt;std::string&gt; files = de.fileToProcess();
+				for (auto file : files) {
+					std::string fileName =  "\\" + FileSystem::Path::getName(file);
+					FileSystem::File::copy(file, fullDstPath + fileName);
+				}
+				reply.attributes()["Output"] = "Files successfully uploaded";
+			}
+			else
+			{
+				std::cout &lt;&lt; "\n  getDirs message did not define a path attribute";
+				reply.attributes()["Output"] = "Files failed to upload";
+			}
+			postMsg(reply);
+		};</div>
+
+		void callPublisher(Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			Msg reply;
+			int argc = 0;
+			reply.to(msg.from());
+			reply.from(msg.to());
+			reply.command("codePublish");
+			std::string path = msg.value("path");
+			std::vector&lt;std::string&gt; args;
+			args.push_back("USELESS");
+			if (path != "") {
+				std::string searchPath = storageRoot;
+				if (path == "Storage")
+				{
+				}
+				else
+					if (path != "." && path != searchPath)
+						searchPath = searchPath + "/" + FileSystem::Path::getName(path);
+				if (!FileSystem::Directory::exists(searchPath))
+				{
+					std::cout &lt;&lt; "\n  file source path does not exist";
+					reply.attributes()["Output"] = "Files failed to convert";
+					postMsg(reply);
+				}
+				args.push_back(searchPath);
+			}
+			std::string patterns = msg.value("patterns");
+			if (patterns != "") {
+				std::vector&lt;std::string&gt; pattern = Utilities::split(msg.value("patterns"), ' ');
+				for (auto patt : pattern)
+					args.push_back(patt);
+			}
+			std::string regex = msg.value("regex");
+			if (regex != "")
+				args.push_back(regex);
+			std::string options = msg.value("options");
+			if (options != "")
+				args.push_back(options);
+			argc += args.size();
+			char** argv = new char*[argc];
+			for (int i = 0; i &lt; argc; i++) {
+				std::string arg = args[i];
+				argv[i] = new char[arg.length()]();
+				strcpy_s(argv[i], arg.length() + 1, arg.c_str());
+			}
+			ObjectFactory factory;
+			Ipublisher* client = factory.createClient();
+			std::vector&lt;std::string&gt; files = client-&gt;startProject(argc, argv);
+			int i = 0;
+			for (auto file : files) {
+				reply.attribute("file" + std::to_string(++i), file);
+			}
+			reply.attributes()["Output"] = "Files successfully converted";
+			postMsg(reply);
+		}</div>
+
+		Repository::ServerProc codePublish = [](Msg msg, std::function&lt;void(Msg)&gt; postMsg) <div class="functions">{
+			std::thread workerThread(callPublisher, msg, postMsg);
+			workerThread.detach();
+		};</div>
+	}</div>
+	
+	using namespace MsgPassingCommunication;
+
+	int main()
+<div class="functions">	{
+		SetConsoleTitleA("Server Console");
+
+		std::cout &lt;&lt; "\n  Server Initialising";
+		std::cout &lt;&lt; "\n ====================";
+		std::cout &lt;&lt; "\n";
+
+		sendFilePath = FileSystem::Directory::createOnPath("./SendFiles");
+		saveFilePath = FileSystem::Directory::createOnPath("./SaveFiles");
+
+		Server server(serverEndPoint, "Server");
+
+		<div class="comments">// may decide to remove Context</div>
+		MsgPassingCommunication::Context* pCtx = server.getContext();
+		pCtx-&gt;saveFilePath = saveFilePath;
+		pCtx-&gt;sendFilePath = sendFilePath;
+
+		server.start();
+
+		server.addMsgProc("echo", echo);
+		server.addMsgProc("getFiles", getFiles);
+		server.addMsgProc("getDirs", getDirs);
+		server.addMsgProc("sendFile", sendFile);
+		server.addMsgProc("saveFiles", saveFiles);
+		server.addMsgProc("codePublish", codePublish);
+		server.addMsgProc("serverQuit", echo);
+
+		server.processMessages();
+
+		Msg msg(serverEndPoint, serverEndPoint);  <div class="comments">// send to self</div>
+		msg.name("msgToSelf");
+
+		std::cout &lt;&lt; "\n  press enter to exit\n";
+		std::cin.get();
+		std::cout &lt;&lt; "\n";
+
+		msg.command("serverQuit");
+		server.postMessage(msg);
+		server.stop();
+		return 0;
+	}</div>
+</pre>
+</body>
+</html>

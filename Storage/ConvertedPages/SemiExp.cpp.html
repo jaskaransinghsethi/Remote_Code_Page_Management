@@ -1,0 +1,417 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3><a href="SemiExp.h.html">SemiExp.h</a>&nbsp;&nbsp;&nbsp;</h3><hr><pre>
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// SemiExpression.cpp - collect tokens for analysis                  //</div>
+<div class="comments">// ver 4.0                                                           //</div>
+<div class="comments">// Language:    C++, Visual Studio 2015                              //</div>
+<div class="comments">// Platform:    Dell XPS 8900, Windows 10                            //</div>
+<div class="comments">// Application: Parser component, CSE687 - Object Oriented Design    //</div>
+<div class="comments">// Author:      Jim Fawcett, Syracuse University, CST 4-187          //</div>
+<div class="comments">//              jfawcett@twcny.rr.com                                //</div>
+<div class="comments">///////////////////////////////////////////////////////////////////////</div>
+
+#include &lt;fstream&gt;
+#include &lt;iostream&gt;
+#include &lt;sstream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
+#include &lt;algorithm&gt;
+#include &lt;unordered_map&gt;
+#include &lt;exception&gt;
+#include &lt;locale&gt;
+#include "SemiExp.h"
+#include "../Tokenizer/Tokenizer.h"
+
+using namespace Scanner;
+using Token = std::string;
+
+<div class="comments">//----&lt; initialize semiExpression with existing toker reference &gt;----</div>
+
+SemiExp::SemiExp(Toker* pToker) : _pToker(pToker) <div class="functions">{}</div>
+
+<div class="comments">//----&lt; copy ctor but don't copy pointer to toker &gt;------------------</div>
+<div class="comments">/*
+*  Allows us to copy tokens for manipulation in grammer methods
+*  but does not give a complete copy.
+*/</div>
+SemiExp::SemiExp(const SemiExp& se)
+<div class="functions">{
+  _tokens = se._tokens;
+  _pToker = nullptr;
+  hasFor = false;
+}</div>
+<div class="comments">//----&lt; move constructor &gt;-------------------------------------------</div>
+
+SemiExp::SemiExp(SemiExp&& se)
+<div class="functions">{
+  _tokens = se._tokens;
+  _pToker = se._pToker;
+  hasFor = se.hasFor;
+  se._tokens.clear();
+  se._pToker = nullptr;
+}</div>
+<div class="comments">//----&lt; assigns tokens but does not assign pointer to toker &gt;--------</div>
+
+SemiExp& SemiExp::operator=(const SemiExp& se)
+<div class="functions">{
+  if (this != &se)
+  {
+    _tokens = se._tokens;
+    _pToker = nullptr;
+  }
+  return *this;
+}</div>
+<div class="comments">//----&lt; move assignment &gt;--------------------------------------------</div>
+
+SemiExp& SemiExp::operator=(SemiExp&& se)
+<div class="functions">{
+  if (this != &se)
+  {
+    _tokens = se._tokens;
+    _pToker = se._pToker;
+    se._tokens.clear();
+    se._pToker = nullptr;
+  }
+  return *this;
+}</div>
+<div class="comments">//----&lt; return iterator pointing to first token &gt;--------------------</div>
+
+SemiExp::iterator SemiExp::begin() <div class="functions">{ return _tokens.begin(); }</div>
+
+<div class="comments">//----&lt; return iterator pointing one past last token &gt;---------------</div>
+
+SemiExp::iterator SemiExp::end() <div class="functions">{ return _tokens.end(); }</div>
+
+<div class="comments">//----&lt; returns position of tok in semiExpression &gt;------------------</div>
+
+size_t SemiExp::find(const std::string& tok, size_t offSet) const
+<div class="functions">{
+  std::string debug = this-&gt;show();
+  for (size_t i = offSet; i &lt; length(); ++i)
+    if (_tokens[i] == tok)
+      return i;
+  return length();
+}</div>
+<div class="comments">//----&lt; returns position of tok in semiExpression &gt;------------------</div>
+
+size_t SemiExp::findLast(const std::string& tok, size_t offSet) const
+<div class="functions">{
+  std::string debug = this-&gt;show();
+  size_t len = length();
+  for (size_t i = offSet; i &lt; len; ++i)
+  {
+    if (_tokens[len - i - 1] == tok)
+      return (len - i - 1);
+  }
+  return length();
+}</div>
+<div class="comments">//----&lt; push token onto back end of SemiExp &gt;------------------------</div>
+
+void SemiExp::push_back(const std::string& tok)
+<div class="functions">{
+  _tokens.push_back(tok);
+}</div>
+<div class="comments">//----&lt; removes token passed as argument &gt;---------------------------</div>
+
+bool SemiExp::remove(const std::string& tok)
+<div class="functions">{
+  std::vector&lt;Token&gt;::iterator iter = _tokens.begin();
+  while (iter != _tokens.end())
+  {
+    if (tok == *iter)
+    {
+      _tokens.erase(iter);
+      return true;
+    }
+    ++iter;
+  }
+  return false;
+}</div>
+<div class="comments">//----&lt; removes token at nth position of semiExpression -------------</div>
+
+bool SemiExp::remove(size_t n)
+<div class="functions">{
+  if (n &lt; 0 || n &gt;= length())
+    return false;
+  std::vector&lt;Token&gt;::iterator iter = _tokens.begin() + n;
+  _tokens.erase(iter);
+  return true;
+}</div>
+<div class="comments">//----&lt; removes newlines from front of semiExpression &gt;--------------</div>
+
+void SemiExp::trimFront()
+<div class="functions">{
+  while (length() &gt; 1)
+  {
+    if (_tokens[0] == "\n")
+      remove(0);
+    else
+      break;
+  }
+}</div>
+<div class="comments">//----&lt; removes newlines from semiExpression &gt;-----------------------</div>
+
+void SemiExp::trim(bool removeComments)
+<div class="functions">{
+  if (removeComments)
+  {
+    size_t i = 0;
+    while (i &lt; _tokens.size())
+    {
+      if (isComment(_tokens[i]))
+        remove(i);
+      else
+        ++i;
+    }
+  }
+  <div class="comments">// remove junk chars that C# puts in first token of file</div>
+
+  static std::locale loc;
+
+  while (_tokens.size() &gt; 1 && !isalnum(_tokens[0][0], loc) && !ispunct(_tokens[0][0], loc))
+  {
+    remove(0);
+    if (_tokens.size() &lt; 2)
+      break;
+  }
+  <div class="comments">// remove newlines</div>
+
+  std::vector&lt;std::string&gt;::iterator new_end;
+  new_end = std::remove(_tokens.begin(), _tokens.end(), "\n");
+  _tokens.erase(new_end, _tokens.end());
+}</div>
+<div class="comments">//----&lt; transform all tokens to lower case &gt;-------------------------</div>
+
+void SemiExp::toLower()
+<div class="functions">{
+  for (auto& token : _tokens)
+  {
+    for (auto& chr : token)
+    {
+      chr = tolower(chr);
+    }
+  }
+}</div>
+<div class="comments">//----&lt; clear contents of SemiExp &gt;----------------------------------</div>
+
+void SemiExp::clear()
+<div class="functions">{
+  _tokens.clear();
+}</div>
+<div class="comments">//----&lt; is this token a comment? &gt;-----------------------------------</div>
+
+bool SemiExp::isComment(const std::string& tok) const
+<div class="functions">{
+  return _pToker-&gt;isComment(tok);
+}</div>
+<div class="comments">//----&lt; return count of newlines retrieved by Toker &gt;----------------</div>
+
+size_t SemiExp::currentLineCount() const
+<div class="functions">{
+  if (_pToker == nullptr)
+    return 0;
+  <div class="comments">/* 
+   *  Tokenizer has collected first non-state char when exiting eatChars()
+   *  so we need to subtract 1 from the Toker's line count.
+   */</div>
+  return _pToker-&gt;currentLineCount() - 1;
+}</div>
+<div class="comments">//----&lt; helps folding for expressions &gt;------------------------------</div>
+
+bool SemiExp::isSemiColonBetweenParens() const
+<div class="functions">{
+  size_t openParenPosition = find("(");
+  size_t semiColonPosition = find(";");
+  size_t closedParenPosition = find(")");
+
+  if (openParenPosition &lt; semiColonPosition && semiColonPosition &lt; closedParenPosition)
+    return true;
+  return false;
+}</div>
+<div class="comments">//----&lt; fills semiExpression collection from attached toker &gt;--------</div>
+
+bool SemiExp::get(bool clear)
+<div class="functions">{
+  bool ok = getHelper(clear);
+
+  if (hasFor && isSemiColonBetweenParens())
+  {
+    getHelper(false);  <div class="comments">// add test for loop termination</div>
+    getHelper(false);  <div class="comments">// add counter increment</div>
+  }
+  return ok;
+}</div>
+<div class="comments">//----&lt; is token a SemiExpression terminator? &gt;----------------------</div>
+
+bool SemiExp::isTerminator(const std::string& token) const
+<div class="functions">{
+  if (token == "{" || token == "}" || token == ";")
+    return true;
+
+  if (token == "\n")
+  {
+    for (size_t i = 0; i &lt; length(); ++i)
+   {
+      if (_tokens[i] == "\n")
+        continue;
+      if (_tokens[i] == "#")
+        return true;
+      else 
+        return false;
+    }
+  }
+
+  if (length() &lt; 2)
+    return false;
+
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "public")
+    return true;
+
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "protected")
+    return true;
+
+  if (token == ":" && length() &gt; 1 && _tokens[length() - 2] == "private")
+    return true;
+
+  return false;
+}</div>
+<div class="comments">//----&lt; does all the work of collecting tokens for collection &gt;------</div>
+
+bool SemiExp::getHelper(bool clear)
+<div class="functions">{
+  hasFor = false;
+  if (_pToker == nullptr)
+    throw(std::logic_error("no Toker reference"));
+  if(clear)
+    _tokens.clear();
+  while (true)
+  {
+    std::string token = _pToker-&gt;getTok();
+    if (token == "")
+      break;
+    _tokens.push_back(token);
+
+    if (token == "for")
+      hasFor = true;
+    
+    if (isTerminator(token))
+      return true;
+  }
+  return false;
+}</div>
+<div class="comments">//----&lt; clone tokens of existing SemiExp &gt;---------------------------</div>
+<div class="comments">/*
+*  Note:
+*  - Returns pointer to new SemiExp on heap.  Application is
+*    responsible for deleting.
+*  - Does not clone pointer to _toker or hasToken members!
+*/</div>
+ITokCollection* SemiExp::clone() const
+<div class="functions">{
+  SemiExp* pClone = new SemiExp;
+  for (size_t i = 0; i &lt; length(); ++i)
+    pClone-&gt;push_back(_tokens[i]);
+  return pClone;
+}</div>
+<div class="comments">//----&lt; clone replaces tokens in caller with tokens of argument &gt;----</div>
+
+void SemiExp::clone(const ITokCollection& se, size_t offSet)
+<div class="functions">{
+  _tokens.clear();
+  for (size_t i = offSet; i &lt; se.length(); ++i)
+  {
+    push_back(se[i]);
+  }
+}</div>
+<div class="comments">//----&lt; read only indexing of SemiExpression &gt;-----------------------</div>
+
+Token SemiExp::operator[](size_t n) const
+<div class="functions">{
+  if (n &lt; 0 || n &gt;= _tokens.size())
+    throw(std::invalid_argument("index out of range"));
+  return _tokens[n];
+}</div>
+<div class="comments">//----&lt; writeable indexing of SemiExpression &gt;-----------------------</div>
+
+Token& SemiExp::operator[](size_t n)
+<div class="functions">{
+  if (n &lt; 0 || n &gt;= _tokens.size())
+    throw(std::invalid_argument("index out of range"));
+  return _tokens[n];
+}</div>
+<div class="comments">//----&lt; return number of tokens in semiExpression &gt;------------------</div>
+
+size_t SemiExp::length() const
+<div class="functions">{
+  return _tokens.size();
+}</div>
+<div class="comments">//----&lt; display collection tokens on console &gt;-----------------------</div>
+
+std::string SemiExp::show(bool showNewLines) const
+<div class="functions">{
+  std::ostringstream out;
+  if(showNewLines)
+    out &lt;&lt; "\n  ";
+  for (auto token : _tokens)
+    if(token != "\n" || showNewLines == true)
+      out &lt;&lt; token &lt;&lt; " ";
+  if(showNewLines)
+    out &lt;&lt; "\n";
+  return out.str();
+}</div>
+
+#ifdef TEST_SEMIEXP
+
+int main()
+<div class="functions">{
+  std::cout &lt;&lt; "\n  Testing SemiExp class";
+  std::cout &lt;&lt; "\n =======================\n";
+
+  Toker toker;
+  <div class="comments">//std::string fileSpec = "../Tokenizer/Tokenizer.cpp";</div>
+  std::string fileSpec = "SemiExp.cpp";
+
+  std::fstream in(fileSpec);
+  if (!in.good())
+  {
+    std::cout &lt;&lt; "\n  can't open file " &lt;&lt; fileSpec &lt;&lt; "\n\n";
+    return 1;
+  }
+  else
+  {
+    std::cout &lt;&lt; "\n  processing file \"" &lt;&lt; fileSpec &lt;&lt; "\"\n";
+  }
+  toker.attach(&in);
+
+  SemiExp semi(&toker);
+  while(semi.get())
+  {
+    std::cout &lt;&lt; "\n  -- semiExpression -- at line number " &lt;&lt; semi.currentLineCount();
+    std::cout &lt;&lt; semi.show();
+  }
+  <div class="comments">/*
+     May have collected tokens, but reached end of stream
+     before finding SemiExp terminator.
+   */</div>
+  if (semi.length() &gt; 0)
+  {
+    std::cout &lt;&lt; "\n  -- semiExpression --";
+    std::cout &lt;&lt; semi.show(true);
+  }
+  std::cout &lt;&lt; "\n\n";
+  return 0;
+}</div>
+#endif
+</pre>
+</body>
+</html>

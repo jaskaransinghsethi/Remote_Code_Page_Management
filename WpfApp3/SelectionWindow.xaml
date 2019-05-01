@@ -1,4 +1,11 @@
-﻿<Window x:Class="WpfApp3.SelectionWindow"
+﻿<!-- 
+  ///////////////////////////////////////////////////////////////////////
+  // SelectionWindow.xaml - Selection Window GUI for viewing files     //
+  // ver 1.0                                                           //
+  // Jaskaran SIngh, CSE687 - Object Oriented Design, Spring 2018      //
+  ///////////////////////////////////////////////////////////////////////
+  -->
+<Window x:Class="WpfApp3.SelectionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

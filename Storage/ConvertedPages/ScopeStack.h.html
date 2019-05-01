@@ -1,0 +1,211 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
+#ifndef SCOPESTACK_H
+#define SCOPESTACK_H
+<div class="comments">/////////////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// ScopeStack.h - implements template stack holding specified element type //</div>
+<div class="comments">// ver 2.2                                                                 //</div>
+<div class="comments">// Language:      Visual C++ 2010, SP1                                     //</div>
+<div class="comments">// Platform:      Dell Precision T7400, Win 7 Pro SP1                      //</div>
+<div class="comments">// Application:   Code Analysis Research                                   //</div>
+<div class="comments">// Author:        Jim Fawcett, CST 4-187, Syracuse University              //</div>
+<div class="comments">//                (315) 443-3948, jfawcett@twcny.rr.com                    //</div>
+<div class="comments">/////////////////////////////////////////////////////////////////////////////</div>
+<div class="comments">/*
+  Package Operations:
+  ===================
+  This package contains one class: ScopeStack&lt;element&gt;.  The element type
+  is an application specific type designed to hold whatever information you
+  need to stack.
+
+  Throws std::exception if stack is popped or peeked when empty.
+
+  Public Interface:
+  =================
+  ScopeStack&lt;element&gt; stack;
+  <div class="comments">// define some element type</div>
+  element elem;
+  stack.push(elem);
+  element popped = stack.pop();
+
+  Required Files:
+  ===============
+  ScopeStack.h, ScopeStack.cpp
+
+  Build Command:
+  ==============
+  devenv ScopeStack.sln /rebuild debug
+
+  Maintenance History:
+  ====================
+  ver 2.2 : 29 Oct 2016
+  - added throw when popping or peeking empty stack
+  ver 2.1 : 02 Jun 2011
+  - changed ScopeStack type to single template argument intended to be
+    an application specific type (usually a struct that holds whatever
+    is needed)
+  ver 2.0 : 02 Feb 2011
+  - fixed bug in pop() method found by Drumil Bhattad
+  ver 1.0 : 31 Jan 2011
+  - first release
+*/</div>
+#include &lt;list&gt;
+#include "../Logger/Logger.h"
+#include "../Utilities/Utilities.h"
+
+<div class="comments">// element is a application specific type.  It must provide a function:</div>
+<div class="comments">// std::string show() that returns a string display of its parts. see</div>
+<div class="comments">// test stub for an example.</div>
+
+namespace CodeAnalysis
+{
+  template&lt;typename element&gt;
+  class ScopeStack <div class="classes">{
+  public:
+    using Rslt = Logging::StaticLogger&lt;0&gt;;    <div class="comments">// show program results</div>
+    using Demo = Logging::StaticLogger&lt;1&gt;;    <div class="comments">// show demonstration outputs</div>
+    using Dbug = Logging::StaticLogger&lt;2&gt;;    <div class="comments">// show debugging outputs</div>
+    typename typedef std::list&lt;element&gt;::iterator iterator;
+
+    ScopeStack();
+    void push(const element& item);
+    element pop();
+    element& top();
+    element& predOfTop();
+    size_t size();
+    iterator begin();
+    iterator end();
+  private:
+    std::list&lt;element&gt; stack;
+    element dbElement;
+  };</div>
+
+  template&lt;typename element&gt;
+  ScopeStack&lt;element&gt;::ScopeStack() <div class="functions">{}</div>
+
+  template&lt;typename element&gt;
+  typename inline size_t ScopeStack&lt;element&gt;::size() <div class="functions">{ return stack.size(); }</div>
+
+  template&lt;typename element&gt;
+  typename inline ScopeStack&lt;element&gt;::iterator ScopeStack&lt;element&gt;::begin() <div class="functions">{ return stack.begin(); }</div>
+
+  template&lt;typename element&gt;
+  typename inline ScopeStack&lt;element&gt;::iterator ScopeStack&lt;element&gt;::end() <div class="functions">{ return stack.end(); }</div>
+
+  template&lt;typename element&gt;
+  void ScopeStack&lt;element&gt;::push(const element& item)
+  <div class="functions">{
+    Demo::flush();
+    stack.push_back(item);
+    Dbug::write("\n--- stack size = " + Utilities_P::Converter&lt;size_t&gt;::toString(size()) + " ---");
+    Dbug::flush();
+  }</div>
+
+  template&lt;typename element&gt;
+  element ScopeStack&lt;element&gt;::pop()
+  <div class="functions">{
+    if (stack.size() == 0)
+    {
+      throw std::exception("-- attempting to pop empty stack --");
+    }
+    element item = stack.back();
+    stack.pop_back();    
+    Dbug::write("\n--- stack size = " + Utilities_P::Converter&lt;size_t&gt;::toString(size()) + " ---");
+    Dbug::flush();
+
+    return item;
+  }</div>
+
+  template&lt;typename element&gt;
+  element& ScopeStack&lt;element&gt;::top()
+  <div class="functions">{
+    if (stack.size() == 0)
+    {
+      throw std::exception("-- attempting to peek top on empty stack --");
+    }
+    return stack.back();
+  }</div>
+
+  template&lt;typename element&gt;
+  element& ScopeStack&lt;element&gt;::predOfTop()
+  <div class="functions">{
+    if (size() &lt; 2)
+    {
+      throw std::exception("-- predOfTop() called on stack with less than two elements --");
+    }
+    iterator iter = --(--end());
+    return *iter;
+  }</div>
+
+  template&lt;typename element&gt;
+  void showStack(ScopeStack&lt;element&gt;& stack, bool indent = true)
+  <div class="functions">{
+    if (stack.size() == 0)
+    {
+      std::cout &lt;&lt; "\n  ScopeStack is empty";
+      return;
+    }
+    typename ScopeStack&lt;element&gt;::iterator iter = stack.begin();
+    while (iter != stack.end())
+    {
+      std::string strIndent = std::string(2 * stack.size(), ' ');
+      if (!indent)
+        strIndent = "";
+      element temp = *iter;
+      std::cout &lt;&lt; "\n  " &lt;&lt; strIndent &lt;&lt; temp-&gt;show();
+      ++iter;
+    }
+  }</div>
+
+  template&lt;typename element&gt;
+  void showStack(ScopeStack&lt;element*&gt;& stack, bool indent = true)
+  <div class="functions">{
+    if (stack.size() == 0)
+    {
+      std::cout &lt;&lt; "\n  ScopeStack is empty";
+      return;
+    }
+    typename ScopeStack&lt;element*&gt;::iterator iter = stack.begin();
+    while (iter != stack.end())
+    {
+      std::string strIndent = std::string(2 * stack.size(), ' ');
+      if (!indent)
+        strIndent = "";
+      std::cout &lt;&lt; "\n  " &lt;&lt; strIndent &lt;&lt; ((*iter)-&gt;show());
+      ++iter;
+    }
+  }</div>
+  <div class="comments">//----&lt; walk tree of element nodes &gt;---------------------------------</div>
+
+  template&lt;typename element&gt;
+  void TreeWalk(element* pItem, bool details = false)
+  <div class="functions">{
+    static std::string path;
+    static size_t indentLevel = 0;
+    std::ostringstream out;
+    out &lt;&lt; "\n  " &lt;&lt; std::string(2 * indentLevel, ' ') &lt;&lt; pItem-&gt;show();
+    std::cout &lt;&lt; out.str();
+    auto iter = pItem-&gt;children_.begin();
+    ++indentLevel;
+    while (iter != pItem-&gt;children_.end())
+    {
+      TreeWalk(*iter);
+      ++iter;
+    }
+    --indentLevel;
+  }</div>
+}</div>
+#endif
+</pre>
+</body>
+</html>

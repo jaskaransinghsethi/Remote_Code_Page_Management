@@ -712,6 +712,21 @@ bool Directory::remove(const std::string& path)
 {
   return ::RemoveDirectoryA(path.c_str()) == 0;
 }
+
+//----< create directory on path >-----------------------------------------
+/*
+*  - provide a relative path
+*  - returns absolute path and creates directory if it did not already exist
+*/
+std::string Directory::createOnPath(const std::string& relPath)
+{
+	std::string fullPath = FileSystem::Path::getFullFileSpec(relPath);
+	if (!exists(fullPath))
+	{
+		::CreateDirectoryA(fullPath.c_str(), NULL);
+	}
+	return fullPath;
+}
 //----< find first file >--------------------------------------------------
 
 std::string FileSystemSearch::firstFile(const std::string& path, const std::string& pattern)

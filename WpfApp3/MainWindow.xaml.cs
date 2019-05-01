@@ -1,8 +1,8 @@
 ﻿//////////////////////////////////////////////////////////////////////////////////
-// WPF CS FILe    : Defines all the functionalitis of WPF GUI                   //
-// ver 1.1																		//
+// MainWindow.xaml.cs    : Defines all the functionalitis of WPF GUI            //
+// ver 1.3																		//
 //																				//
-// Application    : CSE-687 Project 3					                        //
+// Application    : CSE-687 Project 4					                        //
 // Platform       : Visual Studio 2017 Community Edition                        //
 //                  Windows 10 Professional 64-bit, Acer Aspire R5-571TG        //
 // Author         : Jaskaran Singh, EECS Department, Syracuse University        //
@@ -11,21 +11,31 @@
 /*
  * Package Operations:
  * -------------------
- * This package defines all the functionalities of WPF GUI. It has two views
- * 1. Navigation View
- * 2. Display View
- * Navigation view supports navigation of files and folders recursively. It also
- * supports Regex & file patterns.
- * Display view supports displaying all converted valid html file in a browser
- * or using a selection windows pop box
+ * This package defines all the functionalities of WPF GUI. It has 4 views
+ * 1. Connection Tab            - Connect to the server with server address and port
+ * 2. Navigation View           - Display all the files and folders on the client
+ * 3. Remote View               - Display all the files and folders on the server
+ * 4. Display View              - Display a list of converted files
  * 
  * Required File:
  * --------------
- * MainWindow.xaml, MainWindow.xaml.cs               //WPF Main Window
- * SelectionWindow.xaml, SelectionWindow.xaml        //WPF Selection Window
+ * MainWindow.xaml, MainWindow.xaml.cs                  //WPF Main Window
+ * SelectionWindow.xaml, SelectionWindow.xaml           //WPF Selection Window
+ * Translater.h, Translater.cpp                         //CLR Translator
+ * CsMessage.h                                          //Cs Messages
+ * ConnControl.xaml, ConnControl.xaml.cs                //Connection Control
+ * LocalNavControl.xaml, LocalNavControl.xaml.cs        //Local Navigation Control
+ * RemoteNavControl.xaml, RemoteNavControl.xaml.cs      //Remote Navigation Control
+ * DisplayControl.xaml, DisplayControl.xaml.cs          //Display Control
  * 
  * Maintenance History:
  * --------------------
+ * -April 30th, 2019
+ *  Added Communication channel functionality to the WPF
+ * 
+ * -April 25th, 2019
+ *  Added seperate ConnControl, LocalNavControl, RemoteNavControl, DisplayControl
+ * 
  * -April 8th, 2019
  *  Implemented threading to improve performance issues
  *  
@@ -36,68 +46,434 @@
 using System;
 using System.Collections.Generic;
 using System.Windows;
-using System.Windows.Input;
 using System.IO;
 using System.Diagnostics;
 using System.Threading;
+using MsgPassingCommunication;
 using System.Threading.Tasks;
 
 namespace WpfApp3
 {
-
     /// <summary>
     /// Main Window Class
     /// </summary>
     public partial class MainWindow : Window
     {
-        //Object of C++ CLI Translator
-        Translator trans;
-        
-        //String to store path
-        public string path { get; set; }
-
-        //List of String to store converted files
-        List<string> convertedFiles { get; set; } = new List<string>();
-
-        //String to store regex
-        public string regex { get; set; }
-
-        //String to store patterns
-        public string patterns { get; set; }
-
-        //String to store options
-        public string options { get; set; }
-
-        //Main Window constructor
+        //----< Main Window constructor >----------------
         public MainWindow()
         {
             InitializeComponent();
+            Console.Title = "Project 4 GUI Console";
         }
 
-        //A function to load files when window is loaded
-        async private void Window_Loaded(object sender, RoutedEventArgs e)
+        #region  Main Window Variables
+
+        internal string serverName;
+        internal int serverPort;
+        internal string clientName;
+        internal int clientPort;
+
+        //Endpoints for the server
+        internal CsEndPoint serverEndPoint_;
+
+        //Object of C++ CLI Translator
+        internal Translater translater;
+
+        //Endpoints for the client
+        internal CsEndPoint clientEndPoint_;
+
+        //Reciever thread on the client
+        private Thread rcvThrd = null;
+
+        //Message processing dispatcher
+        private Dictionary<string, Action<CsMessage>> dispatcher_
+            = new Dictionary<string, Action<CsMessage>>();
+
+        internal Stack<string> pathStack_ = new Stack<string>();
+
+        //Path for saving files
+        internal string saveFilePath;
+
+        //Path from where files are sent to the server
+        internal string sendFilePath;
+        internal string selectedDir = "";
+
+        //String to store path
+        internal string path { get; set; }
+
+        //List of String to store converted files
+        internal List<string> convertedFiles { get; set; } = new List<string>();
+
+        //String to store regex
+        internal string regex { get; set; }
+
+        //String to store patterns
+        internal string patterns { get; set; }
+
+        //Type of mode in which application is going to run
+        internal string mode { get; set; }
+        #endregion
+
+        //----< Window loaded function >---------------
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            //setting up server and client uri
+            setUp();
+
+            if (mode == "DEMO")
+                ATU();
+        }
+
+        //----< process incoming messages on child thread >----------------
+        internal void processMessages()
+        {
+            ThreadStart thrdProc = () => {
+                while (true)
+                {
+                    CsMessage msg = translater.getMessage();
+                    try
+                    {
+                        string msgId = msg.value("command");
+                        Console.Write("\n  client getting message \"{0}\"", msgId);
+                        if (dispatcher_.ContainsKey(msgId))
+                            dispatcher_[msgId].Invoke(msg);
+                    }
+                    catch (Exception)
+                    {
+                        //Console.Write("\n  {0}", ex.Message);
+                        //msg.show();
+                    }
+                }
+            };
+            rcvThrd = new Thread(thrdProc);
+            rcvThrd.IsBackground = true;
+            rcvThrd.Start();
+        }
+
+        //----< add client processing for message with key >---------------
+        private void addClientProc(string key, Action<CsMessage> clientProc)
+        {
+            dispatcher_[key] = clientProc;
+        }
+
+        //----< Starting up comm after client is connected to the server >---------------
+        internal void startComm()
+        {
+            NavRemote.Remote_Dirs.Items.Clear();
+            NavRemote.Remote_Files.Items.Clear();
+
+            translater = new Translater();
+            translater.listen(clientEndPoint_);
+            processMessages();
+
+            //load dispatcher
+            loadDispatcher();
+
+            pathStack_.Push("../Storage");
+
+            NavRemote.Remote_CurrPath.Text = "Storage";
+            pathStack_.Push("../Storage");
+
+            saveFilePath = translater.setSaveFilePath("../../../SaveFiles");
+            sendFilePath = translater.setSendFilePath("../../../SendFiles");
+
+            NavRemote.refreshDisplay();
+
+            loadFiles();
+        }
+
+        //----< Setting up server & client address and port >---------------
+        private void setUp()
+        {
+            try
+            {
+                //Get commandline arguments
+                string[] args = Environment.GetCommandLineArgs();
+                serverName = args[1];
+                serverPort = Convert.ToInt32(args[2]);
+                clientName = args[3];
+                clientPort = Convert.ToInt32(args[4]);
+                mode = args[5];
+
+                ConnCont.servAddress.Text = serverName;
+                ConnCont.servPort.Text = serverPort.ToString();
+
+                //Set client address
+                clientEndPoint_ = new CsEndPoint();
+                clientEndPoint_.machineAddress = clientName;
+                clientEndPoint_.port = clientPort;
+
+                //Set server address
+                serverEndPoint_ = new CsEndPoint();
+                serverEndPoint_.machineAddress = serverName;
+                serverEndPoint_.port = serverPort;
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("\n Invalid Commandline Arguments");
+                Console.WriteLine("\n Commandline:- [serverAddress] [serverPort] [clientAddress] [clientPort] [demo/application] [path] [regex]");
+            }
+        }
+
+        //----< Setting up server address and port if user changes it >---------------
+        internal void serverChanged()
+        {
+            serverEndPoint_.machineAddress = serverName;
+            serverEndPoint_.port = serverPort;
+        }
+
+        //----< helper function to load dispatcher on the client >---------------
+        private void loadDispatcher()
+        {
+            DispatcherLoadGetDirs();
+            DispatcherLoadGetFiles();
+            DispatcherLoadSendFile();
+            DispatcherSaveFiles();
+            DispatchercodePublish();
+        }
+
+        //----< strip off name of first part of path >---------------------
+        public string removeFirstDir(string path)
+        {
+            string modifiedPath = path;
+            int pos = path.IndexOf("/");
+            modifiedPath = path.Substring(pos + 1, path.Length - pos - 1);
+            return modifiedPath;
+        }
+
+        //----< load codePublish processing into dispatcher dictionary >------
+        private void DispatchercodePublish()
+        {
+            Action<CsMessage> codePublish = (CsMessage rcvMsg) =>
+            {
+                Console.Write("\n  processing publish request's reply");
+                var enumer = rcvMsg.attributes.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    string key = enumer.Current.Key;
+                    if (key.Contains("Output"))
+                    {
+                        if (mode != "DEMO")
+                        {
+                            string title = "Result:";
+                            System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
+                            System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(enumer.Current.Value, title, buttons);
+                        }
+                        Dispatcher.Invoke(() => {
+                            staturBar.Text = "Ready";
+                        });
+                    }
+
+                    if (key.Contains("file"))
+                    {
+                        Action<string> doFile = (string file) =>
+                        {
+                            DispView.convertedF.Items.Add(System.IO.Path.GetFileName(file));
+                            convertedFiles.Add(file);
+                        };
+                        Dispatcher.Invoke(doFile, new Object[] { enumer.Current.Value });
+                    }
+                }
+                Dispatcher.Invoke(() => {
+                    tabC.SelectedIndex = 3;
+                });
+                
+            };
+            addClientProc("codePublish", codePublish);
+        }
+
+        //----< load getDirs processing into dispatcher dictionary >------
+        private void DispatcherLoadGetDirs()
+        {
+            Action<CsMessage> getDirs = (CsMessage rcvMsg) =>
+            {
+                Action clrDirs = () =>
+                {
+                    NavRemote.clearDirs();
+                };
+                Dispatcher.Invoke(clrDirs, new Object[] { });
+                var enumer = rcvMsg.attributes.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    string key = enumer.Current.Key;
+                    if (key.Contains("dir"))
+                    {
+                        Action<string> doDir = (string dir) =>
+                        {
+                            NavRemote.addDir(dir);
+                        };
+                        Dispatcher.Invoke(doDir, new Object[] { enumer.Current.Value });
+                    }
+                }
+                Action insertUp = () =>
+                {
+                    NavRemote.insertParent();
+                };
+                Dispatcher.Invoke(insertUp, new Object[] { });
+            };
+            addClientProc("getDirs", getDirs);
+        }
+
+        //----< load getFiles processing into dispatcher dictionary >------
+        private void DispatcherLoadGetFiles()
+        {
+            Action<CsMessage> getFiles = (CsMessage rcvMsg) =>
+            {
+                Action clrFiles = () =>
+                {
+                    NavRemote.clearFiles();
+                };
+                Dispatcher.Invoke(clrFiles, new Object[] { });
+                var enumer = rcvMsg.attributes.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    string key = enumer.Current.Key;
+                    if (key.Contains("file"))
+                    {
+                        Action<string> doFile = (string file) =>
+                        {
+                            NavRemote.addFiles(file);
+                        };
+                        Dispatcher.Invoke(doFile, new Object[] { enumer.Current.Value });
+                    }
+                }
+            };
+            addClientProc("getFiles", getFiles);
+        }
+
+        //----< load getFiles processing into dispatcher dictionary >------
+        private void DispatcherLoadSendFile()
+        {
+            Action<CsMessage> sendFile = (CsMessage rcvMsg) =>
+            {
+                Console.Write("\n  processing incoming file");
+                string fileName = "";
+                var enumer = rcvMsg.attributes.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    string key = enumer.Current.Key;
+                    if (key.Contains("sendingFile"))
+                    {
+                        fileName = enumer.Current.Value;
+                        break;
+                    }
+                }
+                if (fileName.Length > 0)
+                {
+                    Action<string> act = (string fileNm) => {
+                        if (rcvMsg.attributes.ContainsKey("convertedFile"))
+                            if (rcvMsg.attributes["convertedFile"] == "1")
+                                showConvFile(fileNm);
+                            else
+                                showFile(fileNm);
+                        else
+                            showFile(fileNm);
+                    };
+                    Dispatcher.Invoke(act, new object[] { fileName });
+                }
+            };
+            addClientProc("sendFile", sendFile);
+        }
+
+        //----< load converted HTML file either in browser or in the selection window >------
+        private void showConvFile(string fileName)
+        {
+            try
+            {
+                if (DispView.browse.IsSelected)
+                {
+                    string filePath = saveFilePath + "\\" + fileName;
+                    filePath = System.IO.Path.GetFullPath(filePath);
+                    Thread workerThread = new Thread( () => {
+                        var process = new Process();
+                        process.StartInfo.FileName = "firefox";
+                        process.StartInfo.Arguments = filePath;
+                        process.Start();
+                        process.WaitForExit();
+                        Dispatcher.Invoke(() => staturBar.Text = "Ready");
+                    });
+                    workerThread.Start();
+                }
+                else
+                {
+                    showFile(fileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\n Exception caught:" + ex.Message);
+            }
+        }
+
+        //----< load saveFiles processing into dispatcher dictionary >------
+        private void DispatcherSaveFiles()
+        {
+            Action<CsMessage> saveFiles = (CsMessage rcvMsg) =>
+            {
+                Console.Write("\n  processing save file request's reply");
+                var enumer = rcvMsg.attributes.GetEnumerator();
+                while (enumer.MoveNext())
+                {
+                    string key = enumer.Current.Key;
+                    if (key.Contains("Output"))
+                    {
+                        if (mode != "DEMO")
+                        {
+                            string title = "Result:";
+                            System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
+                            System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(enumer.Current.Value, title, buttons);
+                        }
+                        Dispatcher.Invoke(() => { staturBar.Text = "Ready"; });
+                        return;
+                    }
+                }
+            };
+            addClientProc("saveFiles", saveFiles);
+        }
+
+        //----< load file text in the selection window >------
+        private void showFile(string fileName)
+        {
+            string fpath = saveFilePath + "\\" + fileName;
+            fpath = System.IO.Path.GetFullPath(fpath);
+            string contents = File.ReadAllText(fpath);
+            SelectionWindow popup = new SelectionWindow();
+            popup.codeView.Text = contents;
+            popup.Show();
+        }
+
+        //----< load files into GUI when window is loaded  >------
+        private void loadFiles()
         {
             Thread worker;
             worker = new Thread(() =>
             {
-                path = Directory.GetCurrentDirectory();
-                path = getAncestorPath(3, path);
-                Dispatcher.Invoke(() =>
+                try
                 {
-                    regex = txtRegexs.Text;
-                    patterns = txtPatterns.Text;
-                    if (subdirs.IsChecked.Equals(true))
-                        options = "/s";
-                    else
-                        options = "";
-                    LoadNavTab(path);
-                });
+                    path = Directory.GetCurrentDirectory();
+                    path = NavLocal.getAncestorPath(3, path);
+                    Dispatcher.Invoke(() =>
+                    {
+                        regex = NavLocal.txtRegexs.Text;
+                        patterns = NavLocal.txtPatterns.Text;
+                        if (NavLocal.subdirs.IsChecked.Equals(true))
+                            NavLocal.options = "/s";
+                        else
+                            NavLocal.options = "";
+
+                        NavLocal.LoadNavTab(path);
+                    });
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine("Exception caught: " + ex.Message);
+                }
             });
             worker.Start();
-            await Task.Delay(1000);
-            ATU();
+            //ATU();
         }
 
+        
         //A function to demonstrate all the requirements are fullfilled
         private void ATU()
         {
@@ -111,439 +487,69 @@ namespace WpfApp3
                     " facilities and an Object Factory which returns a pointer to Publisher of IPublisher type");
                 Console.WriteLine("      Path to IPublisher.h:  " + System.IO.Path.GetFullPath("../../../Publisher/IPublisher.h"));
                 Console.WriteLine("      Path to Publisher.h & Object Factory:  " + System.IO.Path.GetFullPath("../../../Publisher/Publisher.h"));
-                Console.WriteLine("Req4: Publisher and IPublisher are built as DLLs, IPublisher exposes the Publisher methods to the C++ CLR/CLI translator");
-                Console.WriteLine("Req5: The C++ CLR/CLI translator is created to support interaction of managed code with native code");
+                Console.WriteLine("      Publisher and IPublisher are built as DLLs, IPublisher exposes the Publisher methods to the C++ CLR/CLI translator");
+                Console.WriteLine("Req4: This project provides Graphical User Interface (GUI) for the client that supports navigating remote directories to find a project for conversion, " +
+                                        "and supports displaying the conversion results in a way that meets Project #3 requirements.");
+                Console.WriteLine("Req5: This project provide message designs appropriate for this application. All messages are instances of the same Message class, but have a specified set of attributes " +
+                                            "and body contents suited for the intended task.");
                 Console.WriteLine("      Translator is built as Dynamic link library to support this interaction");
                 Console.WriteLine("      Path to Translator.h:  " + System.IO.Path.GetFullPath("../../../Translator/Translator.h"));
-                Console.WriteLine("Req6: The WPF GUI is implemented with two views. Navigation view for selection of path, giving pattern and regex");
+                Console.WriteLine("Req6: This project support converting source code in the server and, with a separate request, " +
+                                         "transferring one or more converted files back to the local client, using the communication channel.");
                 Console.WriteLine("      Display view shows all the converted files. It supports two mode. Open files in browser or Open files in new window");
-                Console.WriteLine("Req7: This is Automated Test Suite");
+                Console.WriteLine("Req7: This project demonstrate correct operations for two concurrent clients.");
+                Console.WriteLine("Req8: This is Automated Test Suite");
                 Console.WriteLine("=======================================Demonstrating Requirements=======================================");
-                try
+                Dispatcher.Invoke(async () =>
                 {
-                    Dispatcher.Invoke(() =>
+                    Console.WriteLine("\n Client running on: " + clientName + ":" + clientPort);
+                    string[] args = Environment.GetCommandLineArgs();
+                    ConnCont.Connect_Click(null, null);
+                    try
                     {
-                        Button_Click(this, null);
-                    });
-                }
-                catch(SystemException ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                        path = System.IO.Path.GetFullPath(args[6]);
+                        regex = args[7];
+                        NavLocal.txtRegexs.Text = regex;
+                        NavLocal.CurrPath.Text = path;
+                        Console.WriteLine("\n Path given to be published:" + path);
+                        Console.WriteLine("\n Regex given:" + regex);
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("\n Exception caught in ATU");
+                    }
+                    await Task.Delay(1000);
+                    NavLocal.Upload_Click(null, null);
+                    await Task.Delay(2000);
+                    NavLocal.Publish_Click(null, null);
+                });
             });
             thread.Start();
         }
-
-        //A function to get ancestor of all folder at a given path
-        private string getAncestorPath(int n, string path)
-        {
-            for (int i = 0; i < n; ++i)
-                path = Directory.GetParent(path).FullName;
-            return path;
-        }
-
-        //A function to load file and folder into the listbox
-        private void LoadNavTab(string path)
-        {
-            Dirs.Items.Clear();
-            CurrPath.Text = path;
-            string[] dirs = Directory.GetDirectories(path);
-            Dirs.Items.Add("..");
-            foreach (string dir in dirs)
-            {
-                DirectoryInfo di = new DirectoryInfo(dir);
-                string name = System.IO.Path.GetDirectoryName(dir);
-                Dirs.Items.Add(di.Name);
-            }
-            string[] files = Directory.GetFiles(path);
-            foreach (string file in files)
-            {
-                string name = System.IO.Path.GetFileName(file);
-                Dirs.Items.Add(name);
-            }
-        }
-
-        //A function to display all the converted html files into Display view
-        private void displayCFiles()
-        {
-            convertedF.Items.Clear();
-            foreach (string file in convertedFiles)
-            {
-                string name = System.IO.Path.GetFileName(file);
-                convertedF.Items.Add(name);
-            }
-        }
-
-        //A function to handle mouse double click on files or folders in the Navigation view
-        private void Dirs_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-
-            var temp = System.IO.Path.Combine(path, Dirs.SelectedItem.ToString());
-
-            //detect whether its a directory or file
-            if (Directory.Exists(temp))
-            {
-                string selectedDir = Dirs.SelectedItem.ToString();
-                if (selectedDir == "..")
-                    path = getAncestorPath(1, path);
-                else
-                    path = System.IO.Path.Combine(path, selectedDir);
-                LoadNavTab(path);
-            }
-            else if (File.Exists(temp))
-            {
-                string fileName = Dirs.SelectedValue as string;
-                try
-                {
-                    string fpath = System.IO.Path.Combine(path, fileName);
-                    string contents = File.ReadAllText(fpath);
-                    SelectionWindow popup = new SelectionWindow();
-                    popup.codeView.Text = contents;
-                    popup.Show();
-                }
-                catch (Exception ex)
-                {
-                    string msg = ex.Message;
-                    SelectionWindow popup = new SelectionWindow();
-                    popup.codeView.Text = msg;
-                    popup.Show();
-                }
-            }
-        }
-
-        //A function to handle open all converted files in the Display view
-        private void DisplayF_Click(object sender, RoutedEventArgs e)
-        {
-            bool isSelected = browse.IsSelected;
-            try
-            {
-                Thread worker;
-                worker = new Thread(() =>
-                {
-                    if (isSelected)
-                    {
-                        openInBrowser();
-                    }
-                    else
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            openInSelW();
-                        });
-                    }
-                    try
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            staturBar.Text = "Ready";
-                        });
-                    }
-                    catch (SystemException ex)
-                    {
-                        Console.WriteLine(ex.Message);
-                    }
-                });
-                worker.Start();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-
-        //A function to open converted file in the browser
-        private void openInBrowser()
-        {
-            foreach (string file in convertedFiles)
-            {
-                try
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        staturBar.Text = "Busy - Open Converted Files in Firefox";
-                    });
-                    var process = new Process();
-                    process.StartInfo.FileName = "firefox";
-                    process.StartInfo.Arguments = file;
-                    process.Start();
-                    process.WaitForExit();
-                }
-                catch (SystemException ex)
-                {
-                    string msg = ex.Message;
-                    try
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            SelectionWindow popup = new SelectionWindow();
-                            popup.codeView.Text = msg;
-                            popup.Show();
-                        });
-                    }
-                    catch (Exception s)
-                    {
-                        Console.WriteLine(s.Message);
-                    }
-                }
-            }
-        }
-
-        //A function to open converted file in selection window
-        private void openInSelW()
-        {
-            foreach (string file in convertedFiles)
-            {
-                try
-                {
-                    SelectionWindow popup = new SelectionWindow();
-                    staturBar.Text = "Busy - Open Converted Files in Selection Window";
-                    string contents = File.ReadAllText(file);
-                    popup.codeView.Text = contents;
-                    popup.ShowDialog();
-                }
-                catch (Exception ex)
-                {
-                    string msg = ex.Message;
-                    SelectionWindow popup = new SelectionWindow();
-                    popup.codeView.Text = msg;
-                    popup.Show();
-                }
-            }
-        }
-
-        //A function to handle publish button in Navigation view
-        async private void Button_Click(object sender, RoutedEventArgs e)
-        {
-            staturBar.Text = "Converting";
-            await Task.Delay(500);
-            Thread worker;
-            worker = new Thread(() =>
-            {
-                trans = new Translator();
-                List<String> args = new List<string>();
-                String pPath = System.IO.Path.GetFullPath("../../MainWindow.xaml.cs");
-                args.Add(pPath);
-                args.Add(path);
-                args.Add(options);
-                List<String> temp = new List<string>();
-                args.AddRange(patterns.Split(' '));
-                args.Add(regex);
-                convertedFiles = trans.startProject(args);
-                Dispatcher.Invoke(async () =>
-                {
-                    displayCFiles();
-                    if (e != null)
-                    {
-                        string message = "All files have been published successfully";
-                        string title = "Conversion Complete";
-                        System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
-                        System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-                        if (result == System.Windows.Forms.DialogResult.OK)
-                        {
-                            tabC.SelectedIndex = 1;
-                        }
-                        staturBar.Text = "Ready";
-                    }
-                    else
-                    {
-                        await Task.Delay(1000);
-                        staturBar.Text = "All files have been published successfully";
-                        await Task.Delay(1000);
-                        tabC.SelectedIndex = 1;
-                        await Task.Delay(1000);
-                        DisplayF_Click(this, null);
-                    }
-                });
-            });
-            worker.Start();
-        }
-
-        //A function which is invoked when we change regex and press enter
-        private void TxtRegexs_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key == Key.Enter)
-            {
-                if (txtRegexs.Text == "")
-                {
-                    staturBar.Text = "Regex Empty";
-                    string message = "Please input valid Regex";
-                    string title = "Regex Null Exception";
-                    System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
-                    System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-                    if (result == System.Windows.Forms.DialogResult.OK)
-                    {
-                        tabC.SelectedIndex = 0;
-                    }
-                    return;
-                }
-                regex = txtRegexs.Text;
-                staturBar.Text = "Ready";
-            }
-        }
         
-        //A function which is invoked when we change patterns and press enter
-        private void TxtPatterns_KeyDown(object sender, KeyEventArgs e)
-        {
-            if(e.Key == Key.Enter)
-            {
-                if (txtPatterns.Text == "")
-                {
-                    staturBar.Text = "Patterns Empty";
-                    string message = "Please input valid Pattern";
-                    string title = "Patterns Null Exception";
-                    System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
-                    System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(message, title, buttons);
-                    if (result == System.Windows.Forms.DialogResult.OK)
-                    {
-                        tabC.SelectedIndex = 0;
-                    }
-                    return;
-                }
-                patterns = txtPatterns.Text;
-                staturBar.Text = "Ready";
-            }
-        }
         
-        //A function which is invoked when we uncheck subdir checkbox
-        private void Subdirs_unChecked(object sender, RoutedEventArgs e)
+        //----< clean up all threads after application is closed  >------
+        private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
-            if (subdirs.IsChecked.Equals(true))
-                options = "/s";
-            else
-                options = "";
+            Environment.Exit(99);
         }
 
-        //A function which is invoked when we check subdir checkbox
-        private void Subdirs_Checked(object sender, RoutedEventArgs e)
-        {
-            if (subdirs.IsChecked.Equals(true))
-                options = "/s";
-            else
-                options = "";
-        }
-
-        //A function to handle mouse double click on file in Display tab
-        private void ConvertedF_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            if (browse.IsSelected)
-            {
-                try
-                {
-                    Thread worker = new Thread(() =>
-                    {
-                        Dispatcher.Invoke(() =>
-                        {
-                            string file = convertedF.SelectedItem as string;
-                            string path = System.IO.Path.Combine("../../../convertedPages", file);
-                            path = System.IO.Path.GetFullPath(path);
-                            var process = new Process();
-                            process.StartInfo.FileName = "firefox";
-                            process.StartInfo.Arguments = path;
-                            process.Start();
-                        });
-                    });
-                    worker.Start();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-            }
-            else
-                openSourceCode(this,e);
-        }
-
-        // A function to open converted html files in the  selection window
-        private void openSourceCode(object sender, MouseButtonEventArgs e)
-        {
-            try
-            {
-                string file = convertedF.SelectedItem as string;
-                string fpath = System.IO.Path.Combine("../../../convertedPages", file);
-                fpath = System.IO.Path.GetFullPath(fpath);
-                string contents = File.ReadAllText(fpath);
-                SelectionWindow popup = new SelectionWindow();
-                popup.codeView.Text = contents;
-                popup.Show();
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.Message;
-                SelectionWindow popup = new SelectionWindow();
-                popup.codeView.Text = msg;
-                popup.Show();
-            }
-        }
-
-        //A function to handle browse button in navigation tab
+        //----< A function to handle browse button in navigation tab  >------
         private void Button_btnbrowse(object sender, RoutedEventArgs e)
         {
             var FD = new System.Windows.Forms.FolderBrowserDialog();
             if (FD.ShowDialog() == System.Windows.Forms.DialogResult.OK)
             {
                 path = FD.SelectedPath;
-                LoadNavTab(path);
+                NavLocal.LoadNavTab(path);
             }
         }
 
-        //A function to handle exit in button file menu in navigation tab
+        //----< A function to handle exit in button file menu in navigation tab  >------
         private void MenuItem_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown(99);
         }
 
-        //A function to right click mouse button in file menu in display tab
-        private void sourceButton(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                string file = convertedF.SelectedItem as string;
-                string fpath = System.IO.Path.Combine("../../../convertedPages", file);
-                fpath = System.IO.Path.GetFullPath(fpath);
-                string contents = File.ReadAllText(fpath);
-                SelectionWindow popup = new SelectionWindow();
-                popup.codeView.Text = contents;
-                popup.Show();
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.Message;
-                SelectionWindow popup = new SelectionWindow();
-                popup.codeView.Text = msg;
-                popup.Show();
-            }
-        }
-        
-        //A function to right click mouse button in file menu in display tab
-        private void brwserButton(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                Thread worker = new Thread(() =>
-                {
-                    Dispatcher.Invoke(() =>
-                    {
-                        string file = convertedF.SelectedItem as string;
-                        string path = System.IO.Path.Combine("../../../convertedPages", file);
-                        path = System.IO.Path.GetFullPath(path);
-                        var process = new Process();
-                        process.StartInfo.FileName = "firefox";
-                        process.StartInfo.Arguments = path;
-                        process.Start();
-                    });
-                });
-                worker.Start();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-
-        //A function to clean up threads after application is closed
-        private void Window_Unloaded(object sender, RoutedEventArgs e)
-        {
-            Environment.Exit(99);
-        }
     }
 }

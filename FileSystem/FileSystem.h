@@ -246,6 +246,7 @@ namespace FileSystem
   public:
     static bool create(const std::string& path);
     static bool remove(const std::string& path);
+	static std::string createOnPath(const std::string & relPath);
     static bool exists(const std::string& path);
     static std::string getCurrentDirectory();
     static bool setCurrentDirectory(const std::string& path);

@@ -1,0 +1,88 @@
+﻿<!-- 
+  ///////////////////////////////////////////////////////////////////////
+  // RemoteNavControl.xaml - Control GUI for Remote Navigation         //
+  // ver 1.0                                                           //
+  // Jaskaran SIngh, CSE687 - Object Oriented Design, Spring 2018      //
+  ///////////////////////////////////////////////////////////////////////
+  -->    
+<UserControl x:Class="WpfApp3.RemoteNavControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WpfApp3"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+            <RowDefinition Height="AUTO"></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+            <ColumnDefinition Width="AUTO"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+
+        <!--ROW 0 -->
+        <Label Grid.Row="0" Grid.Column="0">Path:</Label>
+        <TextBlock IsEnabled="False" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="3" x:Name="Remote_CurrPath" 
+                                   x:FieldModifier="public" VerticalAlignment="Center" FontWeight="Medium" FontSize="12">
+        </TextBlock>
+        <Label Grid.Row="0" Grid.Column="4">Subdirs:</Label>
+        <CheckBox Grid.Row="0" Grid.Column="5" x:Name="Remote_subdirs" IsChecked="True" Unchecked="Remote_subdirs_Unchecked" 
+                                  Checked="Remote_subdirs_Checked" Margin="5"></CheckBox>
+
+        <!---ROW 1-->
+        <Separator Grid.Row="1" Grid.ColumnSpan="7"></Separator>
+
+        <!-- ROW 2-->
+        <Label Grid.Row="2" Grid.ColumnSpan="7">Dirs:</Label>
+
+        <!--ROW 3-->
+        <Separator  Grid.Row="3" Grid.ColumnSpan="7"></Separator>
+
+        <!--ROW 4-->
+        <ListBox  Grid.Row="4" Grid.ColumnSpan="7" x:Name="Remote_Dirs" x:FieldModifier="public" FontWeight="Medium" 
+                                  FontSize="12" MouseDoubleClick="Remote_Dirs_MouseDoubleClick">
+        </ListBox>
+
+        <!--ROW 5-->
+        <Separator  Grid.Row="5" Grid.ColumnSpan="7"></Separator>
+
+        <!--ROW 6-->
+        <Label Grid.Row="6" Grid.ColumnSpan="7">Files:</Label>
+
+        <!--ROW 7-->
+        <ListBox  Grid.Row="7" Grid.ColumnSpan="7" x:Name="Remote_Files" x:FieldModifier="public" FontWeight="Medium" 
+                                  FontSize="12" MouseDoubleClick="Remote_Files_MouseDoubleClick">
+        </ListBox>
+
+        <!--ROW 8-->
+        <Label Grid.Row="8" Grid.Column="0">Patterns</Label>
+        <TextBox Grid.Row="8" Grid.Column="1" x:Name="Remote_txtPatterns" x:FieldModifier="public" VerticalAlignment="Center" 
+                                 FontWeight="Medium" FontSize="12" Text="*.h *.cpp" KeyDown="Remote_txtPatterns_KeyDown" Grid.ColumnSpan="3">
+        </TextBox>
+        <Label Grid.Row="8" Grid.Column="4">Regexs:</Label>
+        <TextBox Grid.Row="8" Grid.Column ="5" Grid.ColumnSpan="2" x:Name="Remote_txtRegexs" x:FieldModifier="public" 
+                                 VerticalAlignment="Center" FontWeight="Medium" FontSize="12" Text="[A-B](.*)" 
+                                 KeyDown="Remote_txtRegexs_KeyDown">
+        </TextBox>
+
+        <!--ROW 9-->
+        <Button Grid.Row="9" Grid.ColumnSpan="7" Content="Publish" Click="Remote_Publish_Click"></Button>
+    </Grid>
+</UserControl>

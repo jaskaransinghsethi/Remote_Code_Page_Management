@@ -1,0 +1,100 @@
+<!Doctype html >
+<html>
+<head>
+<link rel = "stylesheet" href = "style.css">
+<script src="showHideClass.js"></script>
+</head>
+<body>
+<button onclick = "showHideClass('classes')">Show or Hide Class Contents</button>
+<button onclick = "showHideClass('functions')">Show or Hide Function Contents</button>
+<button onclick = "showHideClass('comments')">Show or Hide Comments</button>
+<button onclick = "showHideALL('comments')">Show or Hide All</button>
+<br><h3>This File is not dependent on any other file</h3><hr><pre>
+#pragma once
+<div class="comments">///////////////////////////////////////////////////////////////////////////////////</div>
+<div class="comments">// Converter.h - Converter class to convert cpp files into html files            //</div>
+<div class="comments">// ver 1.3                                                                       //</div>
+<div class="comments">// Jaskaran Singh, CSE687 - Object Oriented Design, Fall 2018                    //</div>
+<div class="comments">///////////////////////////////////////////////////////////////////////////////////</div>
+<div class="comments">/*
+ * Package Operations:
+ * -------------------
+ *Converter provides a class, of the same name, that has 3 main functions, first,
+ *cpptohtml which takes a vector of string of files to be converted into html files
+ *and returns a vector of string of converted html files.
+ *Second, initialChecks function which takes the object of ProcessCmdLine class
+ *and which call DirectorExlorer-N to returns all the directories and subdirectories
+ *within directories and files with the matching pattern. initialChecks returns the vector
+ *of string of files which are to be converted to html files.
+ *Third, addDiv tags which add div tags to the appropriate place, which uses
+ *helper functions to achieve this
+ *
+ * Public Interface:
+ * =================
+ * Converter conv;														<div class="comments">//To create object of converter class</div>
+ * vector&lt;string&gt; files = conv.initialChecks(ProcessCmdLine obj);		<div class="comments">//To retrieve all the files from a given directory</div>
+ * vector&lt;string&gt; htmlFiles = conv.cpptohtml(vector&lt;string&gt; files);		<div class="comments">//To convert all the given files into valid html files </div>
+ *																		  and return their valid html file name
+ * bool success = writeHTML(string htmlFile, vector&lt;string&gt; fileContent); <div class="comments">//To write cpp code to html file and returns true if success, </div>
+ *																			otherwise false
+ * display(Files);														<div class="comments">//Function to display a list of files to be processed</div>
+ * addDiv(files, fileContent, LT);										<div class="comments">//Function to add div tags at appropriate places in classes and functions</div>
+ * addPreTags(webpageOutput);											<div class="comments">//Function to add pre tags into the HTML file</div>
+ * handleComments(fileContent);											<div class="comments">//Function to add div tags before and after comments in the html file</div>
+ * handleSwitch(i,line,iter2,lineNo);									<div class="comments">//Helper function for addDiv function</div>
+ * handleFunction(i,line,lineNo);										<div class="comments">//Helper function for handleSwitch function</div>
+ * handleClass(i,line,lineNo);											<div class="comments">//Helper function for handleSwitch function</div>
+ * handleOneLnFOpen(i, line, lineNo);									<div class="comments">//Helper function for handleSwitch function</div>
+ * handleOneLnFClose(i, line, lineNo);									<div class="comments">//Helper function for handleSwitch function</div>
+ *
+ *Required Files:
+ * ---------------
+ * DirExplore-N.h, DirExplorer-N.cpp  <div class="comments">//Director Explorer Naive</div>
+ * FileSystem.h, FileSystem.cpp       <div class="comments">// Directory and Path classes</div>
+ * StringUtilities.h                  <div class="comments">// Title function</div>
+ * CodeUtilities.h                    <div class="comments">// ProcessCmdLine class</div>
+ * DependencyT.h					  <div class="comments">// Dependencies class</div>
+ *
+ * Maintenance History:
+ * --------------------
+ * ver 1.2 : 5 March 2019
+ * - Made adddiv, addpretags, handlecomments functions
+ * ver 1.1 : 28 Jan 2019
+ * - Made initialChecks, cpptohtml funtions, display functions
+ * ver 1.0 : 26 Jan 2019
+ * - first release
+ */</div>
+
+#include&lt;string&gt;
+#include&lt;vector&gt;
+#include "../CodeUtilities/CodeUtilities.h"
+#include&lt;map&gt;
+#include "../DependencyT/DependencyT.h"
+
+namespace html {
+	using namespace std;
+	using namespace Utilities;
+
+	class Converter
+<div class="classes">	{
+	public:
+		Converter();
+		~Converter();
+		void addDiv(string file, std::vector&lt;std::string&gt; &line, std::map&lt;std::string, std::map&lt;std::size_t, DependencyT::TypeInfo&gt;&gt; &LT);
+		void addPreTags(ofstream & webpageOutput);
+		void displayFiles(vector&lt;string&gt; Files);
+		bool writeHTML(string htmlFile, vector&lt;string&gt; fileContent, vector&lt;string&gt; depTable, std::map&lt;std::string, std::map&lt;std::size_t, DependencyT::TypeInfo&gt;&gt; &LT);
+		vector&lt;string&gt; cpptohtml(vector&lt;string&gt; files, map&lt;string, vector&lt;string&gt;&gt; depTable, std::map&lt;std::string, std::map&lt;std::size_t, DependencyT::TypeInfo&gt;&gt; &LT);
+		vector&lt;string&gt; initialChecks(ProcessCmdLine &pcl);
+		void handleComments(vector&lt;string&gt; &fileContent);
+		void handleSwitch(size_t &i, vector&lt;string&gt; &line, std::map&lt;std::size_t, DependencyT::TypeInfo&gt;::iterator &iter2, size_t &lineNo);
+		void handleFunction(size_t &i, vector&lt;string&gt; &line, size_t &lineNo);
+		void handleOneLnFOpen(size_t & i, vector&lt;string&gt;& line, size_t & lineNo);
+		void handleOneLnFClose(size_t & i, vector&lt;string&gt;& line, size_t & lineNo);
+		void handleClass(size_t &i, vector&lt;string&gt; &line, size_t &lineNo);
+	};</div>
+
+}
+</pre>
+</body>
+</html>
